@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ro‘yxatdan o‘tish — AI Sertifikat</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            font-family: Arial, sans-serif;
+            background: #dceaf0;
+            color: #233d4d;
+        }
+
+        .register-card {
+            width: 100%;
+            max-width: 480px;
+            padding: 36px;
+            background: #f3f7f7;
+            border: 1px solid #c4d9dc;
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(40, 78, 91, 0.12);
+        }
+
+        .brand {
+            margin-bottom: 8px;
+            text-align: center;
+            color: #397b83;
+            font-size: 27px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            margin: 0 0 28px;
+            text-align: center;
+            color: #617984;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            margin: 0 0 24px;
+            text-align: center;
+            font-size: 23px;
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        .field > label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            display: block;
+            width: 100%;
+            min-height: 46px;
+            padding: 12px 13px;
+            border: 1px solid #b8cdd2;
+            border-radius: 9px;
+            outline: none;
+            background: #fff;
+            color: #233d4d;
+            font-family: inherit;
+            font-size: 15px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            border-color: #438d91;
+            box-shadow: 0 0 0 3px rgba(67, 141, 145, 0.12);
+        }
+
+        /* Parol maydoni */
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 95px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            padding: 6px 0;
+            border: none;
+            background: transparent;
+            color: #397b83;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .toggle-password:hover {
+            color: #245d64;
+        }
+
+        .toggle-password:focus-visible {
+            outline: 2px solid #438d91;
+            outline-offset: 3px;
+            border-radius: 3px;
+        }
+
+        /* Django yordam matnlari */
+
+        .helptext {
+            display: block;
+            margin-top: 7px;
+            color: #687e87;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .helptext ul {
+            margin: 7px 0 0;
+            padding-left: 18px;
+        }
+
+        .helptext li {
+            margin-bottom: 3px;
+        }
+
+        ul.errorlist {
+            margin: 7px 0 0;
+            padding-left: 18px;
+            color: #b43c45;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .form-errors {
+            margin-bottom: 16px;
+            padding: 12px;
+            border: 1px solid #efc4c7;
+            border-radius: 9px;
+            background: #fff0f0;
+            color: #a52e38;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .submit-button,
+        .google-button {
+            display: flex;
+            width: 100%;
+            min-height: 46px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .submit-button {
+            margin-top: 22px;
+            padding: 12px;
+            border: none;
+            background: #397b83;
+            color: #fff;
+        }
+
+        .submit-button:hover {
+            background: #2d6870;
+        }
+
+        .submit-button:active,
+        .google-button:active {
+            transform: scale(0.99);
+        }
+
+        .separator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 22px 0;
+            color: #71868d;
+            font-size: 13px;
+        }
+
+        .separator::before,
+        .separator::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #d1dfe1;
+        }
+
+        .google-button {
+            padding: 12px;
+            border: 1px solid #b8cdd2;
+            background: transparent;
+            color: #345866;
+        }
+
+        .google-button:hover {
+            background: #e6f0f0;
+        }
+
+        .footer {
+            margin-top: 22px;
+            text-align: center;
+            color: #617984;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        a {
+            color: #397b83;
+        }
+
+        .footer a {
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 14px;
+            }
+
+            .register-card {
+                padding: 25px 20px;
+                border-radius: 16px;
+            }
+
+            .brand {
+                font-size: 25px;
+            }
+
+            h1 {
+                font-size: 21px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="register-card">
+
+        <div class="brand">AI Sertifikat</div>
+
+        <p class="subtitle">
+            Milliy sertifikatga tayyorgarlik platformasi
+        </p>
+
+        <h1>Hisob yaratish</h1>
+
+        <form method="post" action="{% url 'register' %}">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="form-errors" role="alert">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="field">
+
+                    <label for="{{ field.id_for_label }}">
+                        {% if field.name == "username" %}
+                            Foydalanuvchi nomi
+                        {% elif field.name == "email" %}
+                            Elektron pochta
+                        {% elif field.name == "password1" or field.name == "password" %}
+                            Parol
+                        {% elif field.name == "password2" %}
+                            Parolni tasdiqlang
+                        {% elif field.name == "first_name" %}
+                            Ism
+                        {% elif field.name == "last_name" %}
+                            Familiya
+                        {% else %}
+                            {{ field.label }}
+                        {% endif %}
+                    </label>
+
+                    {% if field.field.widget.input_type == "password" %}
+                        <div class="password-wrapper">
+                            {{ field }}
+
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                data-target="{{ field.id_for_label }}"
+                                aria-pressed="false"
+                            >Ko‘rsatish</button>
+                        </div>
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
+
+                    {% if field.help_text %}
+                        <div class="helptext">
+                            {{ field.help_text|safe }}
+                        </div>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        {{ field.errors }}
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+
+            <button class="submit-button" type="submit">
+                Ro‘yxatdan o‘tish
+            </button>
+        </form>
+
+        <div class="separator">yoki</div>
+
+        <a class="google-button" href="/accounts/google/login/">
+            Google orqali ro‘yxatdan o‘tish
+        </a>
+
+        <div class="footer">
+            Hisobingiz bormi?
+            <a href="/accounts/login/">Kirish</a>
+        </div>
+
+    </main>
+
+    <script>
+        document.querySelectorAll(".toggle-password").forEach(function (button) {
+            button.addEventListener("click", function () {
+                const input = document.getElementById(button.dataset.target);
+
+                if (!input) {
+                    return;
+                }
+
+                const showPassword = input.type === "password";
+
+                input.type = showPassword ? "text" : "password";
+                button.textContent = showPassword ? "Yashirish" : "Ko‘rsatish";
+                button.setAttribute("aria-pressed", String(showPassword));
+                button.setAttribute(
+                    "aria-label",
+                    showPassword ? "Parolni yashirish" : "Parolni ko‘rsatish"
+                );
+            });
+        });
+    </script>
+</body>
+</html>

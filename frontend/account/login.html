@@ -1,0 +1,385 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirish | AI Sertifikat</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            padding: 28px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Inter", Arial, sans-serif;
+            color: #29485c;
+            background:
+                radial-gradient(circle at 10% 10%, #d5e8f5 0, transparent 35%),
+                radial-gradient(circle at 90% 90%, #cce8df 0, transparent 35%),
+                #e5eff5;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .brand-icon {
+            width: 58px;
+            height: 58px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #477fa5, #398b78);
+            color: white;
+            font-size: 25px;
+            font-weight: 800;
+            box-shadow: 0 10px 25px #477fa526;
+        }
+
+        .brand h1 {
+            color: #294f68;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .brand h1 span {
+            color: #398b78;
+        }
+
+        .brand p {
+            margin-top: 9px;
+            color: #6c8493;
+            font-size: 13px;
+        }
+
+        .card {
+            padding: 34px;
+            background: #f8fbfc;
+            border: 1px solid #d5e5e9;
+            border-radius: 22px;
+            box-shadow: 0 22px 60px #345b7020;
+        }
+
+        .card h2 {
+            margin-bottom: 10px;
+            color: #294b63;
+            font-size: 25px;
+        }
+
+        .description {
+            margin-bottom: 25px;
+            color: #738895;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .messages,
+        .error-box {
+            margin-bottom: 17px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .messages {
+            background: #e2f2eb;
+            color: #286d57;
+        }
+
+        .error-box {
+            background: #faeaea;
+            color: #a43d3d;
+        }
+
+        .field {
+            margin-bottom: 19px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 8px;
+            color: #38576b;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .field input {
+            width: 100%;
+            min-height: 47px;
+            padding: 12px 14px;
+            border: 1px solid #d0dfe5;
+            border-radius: 10px;
+            outline: none;
+            background: white;
+            color: #29485c;
+            font: inherit;
+            font-size: 14px;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .field input:focus {
+            border-color: #438e80;
+            box-shadow: 0 0 0 3px #438e801a;
+        }
+
+        .errorlist {
+            margin-top: 7px;
+            padding-left: 18px;
+            color: #b84747;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .remember {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin: 3px 0 20px;
+            color: #667f8e;
+            font-size: 13px;
+        }
+
+        .remember input {
+            width: 16px;
+            height: 16px;
+            accent-color: #398b78;
+        }
+
+        .forgot {
+            display: block;
+            margin-top: -7px;
+            margin-bottom: 20px;
+            text-align: right;
+            color: #398b78;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        .forgot:hover,
+        .bottom a:hover {
+            text-decoration: underline;
+        }
+
+        .submit-button {
+            width: 100%;
+            min-height: 49px;
+            border: none;
+            border-radius: 11px;
+            background: linear-gradient(110deg, #477fa5, #398b78);
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity .2s, transform .2s;
+        }
+
+        .submit-button:hover {
+            opacity: .93;
+            transform: translateY(-1px);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            margin: 23px 0;
+            color: #8a9ba5;
+            font-size: 12px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            height: 1px;
+            flex: 1;
+            background: #dce7ea;
+        }
+
+        .google-button {
+            min-height: 47px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 1px solid #d2e0e5;
+            border-radius: 10px;
+            background: white;
+            color: #38566a;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background .2s;
+        }
+
+        .google-button:hover {
+            background: #edf5f3;
+        }
+
+        .google-icon {
+            color: #4285f4;
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .bottom {
+            margin-top: 23px;
+            text-align: center;
+            color: #758995;
+            font-size: 13px;
+            line-height: 1.9;
+        }
+
+        .bottom a,
+        .home-link {
+            color: #398b78;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .home-link {
+            display: block;
+            margin-top: 17px;
+            text-align: center;
+            color: #668091;
+            font-size: 12px;
+        }
+
+        .footer {
+            margin-top: 22px;
+            color: #788f9c;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 25px 20px;
+                border-radius: 18px;
+            }
+
+            .brand h1 {
+                font-size: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+
+        <header class="brand">
+            <div class="brand-icon">AI</div>
+            <h1>AI <span>Sertifikat</span></h1>
+            <p>Milliy sertifikatga tayyorgarlik platformasi</p>
+        </header>
+
+        <section class="card">
+            <h2>Xush kelibsiz!</h2>
+            <p class="description">
+                Akkauntingizga kiring va esselaringizni tekshirishni davom ettiring.
+            </p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="messages">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            {% if form.non_field_errors %}
+                <div class="error-box">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'account_login' %}">
+                {% csrf_token %}
+
+                {% if redirect_field %}
+                    {{ redirect_field }}
+                {% endif %}
+
+                {% for field in form %}
+                    {% if field.name != "remember" %}
+                        <div class="field">
+                            <label for="{{ field.id_for_label }}">
+                                {% if field.name == "login" %}
+                                    Email yoki foydalanuvchi nomi
+                                {% elif field.name == "password" %}
+                                    Parol
+                                {% else %}
+                                    {{ field.label }}
+                                {% endif %}
+                            </label>
+
+                            {{ field }}
+
+                            {% if field.errors %}
+                                {{ field.errors }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                {% if form.remember %}
+                    <label class="remember" for="{{ form.remember.id_for_label }}">
+                        {{ form.remember }}
+                        Meni eslab qol
+                    </label>
+                {% endif %}
+
+                <a class="forgot" href="{% url 'account_reset_password' %}">
+                    Parolni unutdingizmi?
+                </a>
+
+                <button type="submit" class="submit-button">
+                    Kirish
+                </button>
+            </form>
+
+            <div class="divider">yoki</div>
+
+            <a class="google-button" href="{% url 'google_login' %}">
+                <span class="google-icon">G</span>
+                Google orqali kirish
+            </a>
+
+            <div class="bottom">
+                Akkauntingiz yo‘qmi?
+                <a href="{% url 'register' %}">Ro‘yxatdan o‘tish</a>
+            </div>
+
+            <a href="/" class="home-link">
+                ← Asosiy sahifaga qaytish
+            </a>
+        </section>
+
+        <footer class="footer">
+            © 2026 AI Sertifikat. Barcha huquqlar himoyalangan.
+        </footer>
+
+    </main>
+</body>
+</html>

@@ -1,422 +1,305 @@
-<!DOCTYPE html>
-<html lang="uz">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
+{% load static %}
 
-    <title>AI Sertifikat — Milliy sertifikatga tayyorgarlik</title>
+{% block title %}AI Sertifikat — Milliy sertifikatga tayyorgarlik{% endblock %}
 
-    <link rel="stylesheet" href="../css/style.css">
-</head>
+{% block content %}
 
-<body>
+<style>
+    /* SINOV REJIMI */
+    .hero .test-mode-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        width: 100%;
+        max-width: 530px;
+        margin: 0 0 22px;
+        padding: 15px 17px;
+        border: 1px solid #cce6e2;
+        border-left: 4px solid #39998b;
+        border-radius: 12px;
+        background: #f0f9f8;
+        box-shadow: 0 5px 18px rgba(36, 86, 103, 0.05);
+        box-sizing: border-box;
+    }
 
-<!-- ================= NAVBAR ================= -->
+    .hero .test-mode-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: #dcefeb;
+        font-size: 18px;
+    }
 
-<header class="navbar">
+    .hero .test-mode-content {
+        flex: 1;
+        min-width: 0;
+    }
 
-    <div class="container nav-content">
+    .hero .test-mode-content strong {
+        display: block;
+        margin: 0 0 5px;
+        color: #267b73;
+        font-size: 15px;
+        line-height: 1.4;
+        font-weight: 800;
+    }
 
-        <a href="#" class="logo">
-            <span class="logo-icon">AI</span>
-            <span>AI Sertifikat</span>
-        </a>
+    .hero .test-mode-content p {
+        margin: 0;
+        color: #526f7d;
+        font-size: 13px;
+        line-height: 1.7;
+    }
 
-        <nav>
-            <a href="#fanlar">Fanlar</a>
-            <a href="#qanday">Qanday ishlaydi?</a>
-            <a href="#narxlar">Narxlar</a>
-            <a href="#aloqa">Aloqa</a>
-        </nav>
+    /* Telefon uchun */
+    @media (max-width: 480px) {
+        .hero .test-mode-notice {
+            gap: 10px;
+            margin-bottom: 18px;
+            padding: 12px;
+        }
 
-        <div class="nav-buttons">
+        .hero .test-mode-icon {
+            width: 31px;
+            height: 31px;
+            font-size: 16px;
+        }
 
-            <button class="btn btn-login">
-                Kirish
-            </button>
+        .hero .test-mode-content strong {
+            font-size: 14px;
+        }
 
-            <button class="btn btn-primary">
-                Ro‘yxatdan o‘tish
-            </button>
+        .hero .test-mode-content p {
+            font-size: 12px;
+            line-height: 1.6;
+        }
+    }
+</style>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="container hero-content">
+
+        <div class="hero-text">
+
+            <!-- SINOV REJIMI -->
+            <div class="test-mode-notice">
+                <span class="test-mode-icon" aria-hidden="true">⚙️</span>
+
+                <div class="test-mode-content">
+                    <strong>Sinov rejimi</strong>
+                    <p>
+                        Platforma hozirda sinov bosqichida.
+                        Natijalar dastlabki tahlil hisoblanadi.
+                    </p>
+                </div>
+            </div>
+
+            <span class="badge">
+                🎓 O‘quvchilar uchun AI platforma
+            </span>
+
+            <h1>
+                Milliy sertifikat uchun
+                <span>AI yordamchi</span>
+            </h1>
+
+            <p>
+                Rus tili, Ona tili va Matematika fanlarida
+                bilimlaringizni sun’iy intellekt yordamida
+                tekshiring, natijangizni tahlil qiling va
+                xatolaringizni aniqlang.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="#fanlar" class="btn btn-primary btn-large">
+                    Boshlash →
+                </a>
+
+                <a href="#qanday" class="btn btn-outline btn-large">
+                    Qanday ishlaydi?
+                </a>
+            </div>
+
+            <div class="features">
+
+                <div class="feature">
+                    <span>✓</span>
+                    <div>
+                        <strong>AI baholash</strong>
+                        <small>Mezonlar asosida</small>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <span>⚡</span>
+                    <div>
+                        <strong>Tez natija</strong>
+                        <small>Bir necha soniyada</small>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <span>🔒</span>
+                    <div>
+                        <strong>Xavfsiz</strong>
+                        <small>Ma’lumotlaringiz himoyalangan</small>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- HERO VISUAL -->
+        <div class="hero-visual">
+
+            <div class="glow green"></div>
+            <div class="glow blue"></div>
+            <div class="glow red"></div>
+
+            <div class="books">
+                <div class="book blue">🇷🇺 Rus tili</div>
+                <div class="book green">🇺🇿 Ona tili</div>
+                <div class="book red">➗ Matematika</div>
+            </div>
+
+            <div class="ai-card">
+                <div class="ai-circle">AI</div>
+
+                <strong>AI Tekshiruvchi</strong>
+
+                <span>Natijani tahlil qilmoqda...</span>
+
+                <div class="progress">
+                    <div></div>
+                </div>
+            </div>
 
         </div>
 
     </div>
+</section>
 
-</header>
+<!-- SUBJECTS -->
+<section class="subjects" id="fanlar">
+    <div class="container">
 
+        <div class="section-title">
+            <span>FANLAR</span>
 
-<!-- ================= HERO ================= -->
+            <h2>O‘zingizga kerakli fanni tanlang</h2>
 
-<main>
+            <p>
+                AI yordamida bilimlaringizni tekshiring
+                va xatolaringiz ustida ishlang.
+            </p>
+        </div>
 
-    <section class="hero">
+        <div class="subject-grid">
 
-        <div class="container hero-content">
+            <!-- RUS TILI -->
+            <article class="subject-card blue-card">
+                <div class="subject-icon">📘</div>
 
-            <div class="hero-text">
-
-                <span class="badge">
-                    🎓 O‘quvchilar uchun AI platforma
-                </span>
-
-                <h1>
-                    Milliy sertifikat uchun
-                    <span>AI yordamchi</span>
-                </h1>
+                <h3>Rus tili</h3>
 
                 <p>
-                    Rus tili, Ona tili va Matematika fanlarida
-                    bilimlaringizni sun’iy intellekt yordamida
-                    tekshiring, natijangizni tahlil qiling va
-                    xatolaringizni aniqlang.
+                    Esse, grammatika, imlo
+                    va punktuatsiyani tekshirish.
                 </p>
 
-                <div class="hero-buttons">
+                <a href="{% url 'rus_esse' %}" class="subject-button">
+                    Boshlash →
+                </a>
+            </article>
 
-                    <button class="btn btn-primary btn-large">
-                        Boshlash →
-                    </button>
+            <!-- ONA TILI -->
+            <article class="subject-card green-card">
+                <div class="subject-icon">📗</div>
 
-                    <button class="btn btn-outline btn-large">
-                        Qanday ishlaydi?
-                    </button>
-
-                </div>
-
-
-                <div class="features">
-
-                    <div class="feature">
-
-                        <span>✓</span>
-
-                        <div>
-                            <strong>AI baholash</strong>
-                            <small>Mezonlar asosida</small>
-                        </div>
-
-                    </div>
-
-
-                    <div class="feature">
-
-                        <span>⚡</span>
-
-                        <div>
-                            <strong>Tez natija</strong>
-                            <small>Bir necha soniyada</small>
-                        </div>
-
-                    </div>
-
-
-                    <div class="feature">
-
-                        <span>🔒</span>
-
-                        <div>
-                            <strong>Xavfsiz</strong>
-                            <small>Ma’lumotlaringiz himoyalangan</small>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- HERO VISUAL -->
-
-            <div class="hero-visual">
-
-                <div class="glow green"></div>
-                <div class="glow blue"></div>
-                <div class="glow red"></div>
-
-
-                <div class="books">
-
-                    <div class="book blue">
-                        🇷🇺 Rus tili
-                    </div>
-
-                    <div class="book green">
-                        🇺🇿 Ona tili
-                    </div>
-
-                    <div class="book red">
-                        ➗ Matematika
-                    </div>
-
-                </div>
-
-
-                <div class="ai-card">
-
-                    <div class="ai-circle">
-                        AI
-                    </div>
-
-                    <strong>
-                        AI Tekshiruvchi
-                    </strong>
-
-                    <span>
-                        Natijani tahlil qilmoqda...
-                    </span>
-
-                    <div class="progress">
-                        <div></div>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ================= SUBJECTS ================= -->
-
-    <section class="subjects" id="fanlar">
-
-        <div class="container">
-
-            <div class="section-title">
-
-                <span>
-                    FANLAR
-                </span>
-
-                <h2>
-                    O‘zingizga kerakli fanni tanlang
-                </h2>
+                <h3>Ona tili</h3>
 
                 <p>
-                    AI yordamida bilimlaringizni tekshiring
-                    va xatolaringiz ustida ishlang.
+                    Esse, til tahlili va
+                    xatolarni aniqlash.
                 </p>
 
-            </div>
-
-
-            <div class="subject-grid">
-
-
-                <!-- ================= RUS TILI ================= -->
-
-                <article class="subject-card blue-card">
-
-                    <div class="subject-icon">
-                        📘
-                    </div>
-
-                    <h3>
-                        Rus tili
-                    </h3>
-
-                    <p>
-                        Esse, grammatika, imlo
-                        va punktuatsiyani tekshirish.
-                    </p>
-
-                    <a
-                        href="rus-esse.html"
-                        class="subject-button"
-                    >
-                        Boshlash →
-                    </a>
-
-                </article>
-
-
-                <!-- ================= ONA TILI ================= -->
-
-                <article class="subject-card green-card">
-
-                    <div class="subject-icon">
-                        📗
-                    </div>
-
-                    <h3>
-                        Ona tili
-                    </h3>
-
-                    <p>
-                        Esse, til tahlili va
-                        xatolarni aniqlash.
-                    </p>
-
-                    <button>
-                        Boshlash →
-                    </button>
-
-                </article>
-
-
-                <!-- ================= MATEMATIKA ================= -->
-
-                <article class="subject-card red-card">
-
-                    <div class="subject-icon">
-                        📕
-                    </div>
-
-                    <h3>
-                        Matematika
-                    </h3>
-
-                    <p>
-                        Masalalar, testlar va
-                        bosqichma-bosqich yechim.
-                    </p>
-
-                    <button>
-                        Boshlash →
-                    </button>
-
-                </article>
-
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ================= HOW IT WORKS ================= -->
-
-    <section
-        class="how-it-works"
-        id="qanday"
-    >
-
-        <div class="container">
-
-            <div class="section-title">
-
-                <span>
-                    QANDAY ISHLAYDI?
-                </span>
-
-                <h2>
-                    3 ta oddiy qadam
-                </h2>
-
-            </div>
-
-
-            <div class="steps">
-
-
-                <div class="step">
-
-                    <div class="step-number">
-                        01
-                    </div>
-
-                    <h3>
-                        Faningizni tanlang
-                    </h3>
-
-                    <p>
-                        Rus tili, Ona tili yoki
-                        Matematika fanini tanlang.
-                    </p>
-
-                </div>
-
-
-                <div class="step">
-
-                    <div class="step-number">
-                        02
-                    </div>
-
-                    <h3>
-                        Topshiriqni yuboring
-                    </h3>
-
-                    <p>
-                        Esse yoki masalani yozing
-                        yoki fayl sifatida yuklang.
-                    </p>
-
-                </div>
-
-
-                <div class="step">
-
-                    <div class="step-number">
-                        03
-                    </div>
-
-                    <h3>
-                        Natijani oling
-                    </h3>
-
-                    <p>
-                        AI ball, xatolar va
-                        tavsiyalarni ko‘rsatadi.
-                    </p>
-
-                </div>
-
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ================= FOOTER ================= -->
-
-    <footer id="aloqa">
-
-        <div class="container footer-content">
-
-
-            <div>
-
-                <div class="logo">
-
-                    <span class="logo-icon">
-                        AI
-                    </span>
-
-                    AI Sertifikat
-
-                </div>
+                <a href="{% url 'ona_tili' %}" class="subject-button">
+                    Boshlash →
+                </a>
+            </article>
+
+            <!-- MATEMATIKA -->
+            <article class="subject-card red-card">
+                <div class="subject-icon">📕</div>
+
+                <h3>Matematika</h3>
 
                 <p>
-                    Bilim — kelajak kaliti!
+                    Masalalar, testlar va
+                    bosqichma-bosqich yechim.
                 </p>
 
-            </div>
-
-
-            <div>
-                © 2026 AI Sertifikat
-            </div>
-
+                <a href="{% url 'matematika' %}" class="subject-button">
+                    Boshlash →
+                </a>
+            </article>
 
         </div>
+    </div>
+</section>
 
-    </footer>
+<!-- HOW IT WORKS -->
+<section class="how-it-works" id="qanday">
+    <div class="container">
 
+        <div class="section-title">
+            <span>QANDAY ISHLAYDI?</span>
+            <h2>3 ta oddiy qadam</h2>
+        </div>
 
-</main>
+        <div class="steps">
 
+            <div class="step">
+                <div class="step-number">01</div>
 
-<!-- ================= JAVASCRIPT ================= -->
+                <h3>Faningizni tanlang</h3>
 
-<script src="../js/main.js"></script>
+                <p>
+                    Rus tili, Ona tili yoki
+                    Matematika fanini tanlang.
+                </p>
+            </div>
 
-</body>
-</html>
+            <div class="step">
+                <div class="step-number">02</div>
+
+                <h3>Topshiriqni yuboring</h3>
+
+                <p>
+                    Esse yoki masalani yozing
+                    yoki fayl sifatida yuklang.
+                </p>
+            </div>
+
+            <div class="step">
+                <div class="step-number">03</div>
+
+                <h3>Natijani oling</h3>
+
+                <p>
+                    AI ball, xatolar va
+                    tavsiyalarni ko‘rsatadi.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}

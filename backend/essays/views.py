@@ -1,1094 +1,697 @@
+
+import logging
+
+from django.shortcuts import render
+from django.utils import timezone
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+
+from .models import Essay, UnlimitedAccess
 from .ocr import file_to_text
-
-
-from django.contrib.auth.models import User
-
+from .topic_parser import parse_ocr_text
 from .language_checker import detect_essay_language
-from .models import Essay
 from .ai_checker import check_essay_with_ai
 
 
-# =====================================================
-# 75 BALLIK RUS TILI ESSE TEKSHIRUVI
-# =====================================================
+logger = logging.getLogger(__name__)
+
+MAX_TOTAL = 75
+DAILY_ESSAY_LIMIT = 5
+
+CRITERIA = [
+    {
+        "name": "Раскрытие темы (содержание)",
+        "max_score": 20,
+        "score_field": "criterion_1",
+        "reason_field": "criterion_1_reason",
+    },
+    {
+        "name": "Аргументация и примеры",
+        "max_score": 15,
+        "score_field": "criterion_2",
+        "reason_field": "criterion_2_reason",
+    },
+    {
+        "name": "Структура и логика",
+        "max_score": 10,
+        "score_field": "criterion_3",
+        "reason_field": "criterion_3_reason",
+    },
+    {
+        "name": "Лексика и стилистика",
+        "max_score": 10,
+        "score_field": "criterion_4",
+        "reason_field": "criterion_4_reason",
+    },
+    {
+        "name": "Грамотность",
+        "max_score": 10,
+        "score_field": "criterion_5",
+        "reason_field": "criterion_5_reason",
+    },
+    {
+        "name": "Оригинальность (самостоятельность мысли)",
+        "max_score": 10,
+        "score_field": "criterion_6",
+        "reason_field": "criterion_6_reason",
+    },
+]
+
+
+def api_error(message, http_status, **extra):
+    """API uchun yagona xato javobi."""
+    data = {"error": message}
+    data.update(extra)
+    return Response(data, status=http_status)
+
+
+def clean_errors(errors, essay_text):
+    """AI qaytargan xatolarni tekshiradi."""
+    if not isinstance(errors, list):
+        return []
+
+    cleaned = []
+
+    for error in errors:
+        if not isinstance(error, dict):
+            continue
+
+        fragment = str(error.get("fragment") or "").strip()
+
+        if not fragment or fragment not in essay_text:
+            continue
+
+        cleaned.append({
+            "fragment": fragment,
+            "type": str(
+                error.get("type") or "Языковая ошибка"
+            ).strip(),
+            "correction": str(
+                error.get("correction") or ""
+            ).strip(),
+            "explanation": str(
+                error.get("explanation") or ""
+            ).strip(),
+        })
+
+    return cleaned
+
+
+def clean_recommendations(recommendations):
+    """Tavsiyalarni bir xil formatga keltiradi."""
+    if not isinstance(recommendations, list):
+        return []
+
+    cleaned = []
+
+    for item in recommendations:
+        if isinstance(item, dict):
+            text = (
+                item.get("text")
+                or item.get("recommendation")
+                or item.get("description")
+                or ""
+            )
+        else:
+            text = str(item or "")
+
+        text = str(text).strip()
+
+        if text:
+            cleaned.append(text)
+
+    return cleaned
+
+
+def has_unlimited_access(user):
+    """
+    Foydalanuvchida muddati tugamagan Unlimited huquqi borligini tekshiradi.
+    """
+    now = timezone.now()
+
+    return UnlimitedAccess.objects.filter(
+        user=user,
+        is_active=True,
+        expires_at__gt=now,
+    ).exists()
+
+
+def get_daily_usage(user):
+    """
+    Bugun muvaffaqiyatli saqlangan esselar sonini hisoblaydi.
+    """
+    today = timezone.localdate()
+
+    return Essay.objects.filter(
+        user=user,
+        created_at__date=today,
+    ).count()
+
 
 class CheckEssayAPIView(APIView):
+    """
+    Rus tilidagi esseni AI yordamida tekshiradi.
+
+    Kunlik bepul limit: 5 ta esse.
+    Faol Unlimited huquqi bo'lgan foydalanuvchi limit bilan cheklanmaydi.
+    Har bir esse aynan tizimga kirgan foydalanuvchiga saqlanadi.
+    """
+
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        # 1. Foydalanuvchini tekshirish
+        user = request.user
 
-        # =================================================
-        # 1. KIRUVCHI MA'LUMOTLAR
-        # =================================================
+        if not user or not user.is_authenticated:
+            return api_error(
+                "Avval tizimga kiring.",
+                status.HTTP_401_UNAUTHORIZED,
+            )
 
-        essay_text = request.data.get(
-            "essay",
-            ""
-        )
+        # 2. Kunlik limitni AI chaqirilishidan oldin tekshirish
+        try:
+            unlimited = has_unlimited_access(user)
 
-        topic = request.data.get(
-            "topic",
-            ""
-        )
+            if not unlimited:
+                used_today = get_daily_usage(user)
+                remaining = max(
+                    DAILY_ESSAY_LIMIT - used_today,
+                    0,
+                )
 
-        student_name = request.data.get(
-            "student_name",
-            ""
+                if remaining <= 0:
+                    return api_error(
+                        "Bugungi 5 ta bepul esse tekshirish "
+                        "limitingiz tugadi. Ertaga qayta urinib "
+                        "ko'ring.",
+                        status.HTTP_429_TOO_MANY_REQUESTS,
+                        daily_limit=DAILY_ESSAY_LIMIT,
+                        used_today=used_today,
+                        remaining=0,
+                    )
+
+        except Exception:
+            logger.exception(
+                "Foydalanuvchi limitini tekshirishda xatolik"
+            )
+            return api_error(
+                "Limitni tekshirishda xatolik yuz berdi.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        # 3. Foydalanuvchi yuborgan ma'lumotlar
+        essay_text = request.data.get("essay", "")
+        topic = request.data.get("topic", "")
+        student_name = str(
+            request.data.get("student_name") or ""
         ).strip()
 
-        # =================================================
-        # 2. MATN BO'SHLIGINI TEKSHIRISH
-        # =================================================
-
         if not isinstance(essay_text, str):
-            essay_text = str(essay_text)
+            return api_error(
+                "Essay matni noto'g'ri formatda.",
+                status.HTTP_400_BAD_REQUEST,
+            )
 
-        if not essay_text.strip():
-            return Response(
-                {
-                    "error": "Essay matni bo'sh."
-                },
-                status=status.HTTP_400_BAD_REQUEST
+        essay_text = essay_text.strip()
+
+        if not essay_text:
+            return api_error(
+                "Essay matni bo'sh.",
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        if len(essay_text) > 20000:
+            return api_error(
+                "Essay matni 20000 belgidan oshmasligi kerak.",
+                status.HTTP_400_BAD_REQUEST,
             )
 
         if not isinstance(topic, str):
-            topic = str(topic)
+            return api_error(
+                "Essay mavzusi noto'g'ri formatda.",
+                status.HTTP_400_BAD_REQUEST,
+            )
 
-        # =================================================
-        # 3. MATN STATISTIKASI
-        # =================================================
+        topic = topic.strip()
 
+        if not topic:
+            return api_error(
+                "Essay mavzusini kiriting.",
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        if len(topic) > 500:
+            return api_error(
+                "Essay mavzusi 500 belgidan oshmasligi kerak.",
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 4. Matn statistikasi
         words = essay_text.split()
-
         word_count = len(words)
-
         character_count = len(essay_text)
 
         paragraphs = [
-            p.strip()
-            for p in essay_text.split("\n\n")
-            if p.strip()
+            paragraph.strip()
+            for paragraph in essay_text.splitlines()
+            if paragraph.strip()
         ]
-
         paragraph_count = len(paragraphs)
 
-        # =================================================
-        # 4. TEST USER
-        # =================================================
-
-        user, created = User.objects.get_or_create(
-            username="test_user"
-        )
-
-        # =================================================
-        # 5. TILNI TEKSHIRISH
-        # =================================================
-
+        # 5. Rus tilini tekshirish
         try:
+            language_result = detect_essay_language(essay_text)
 
-            language_result = detect_essay_language(
-                essay_text
+        except Exception:
+            logger.exception(
+                "Essay tilini aniqlashda xatolik"
             )
-
-        except Exception as e:
-
-            print(
-                "========== LANGUAGE ERROR =========="
+            return api_error(
+                "Tilni aniqlashda xatolik yuz berdi.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-            print(str(e))
-
-            print(
-                "===================================="
-            )
-
-            return Response(
-                {
-                    "error": "Tilni aniqlashda xatolik.",
-                    "details": str(e)
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        print(
-            "========== LANGUAGE =========="
-        )
-
-        print(language_result)
-
-        print(
-            "=============================="
-        )
-
-        # =================================================
-        # RUS TILI EMAS
-        # =================================================
 
         if not isinstance(language_result, dict):
-
-            return Response(
-                {
-                    "error": "Til tekshiruvi noto'g'ri javob qaytardi.",
-                    "language": language_result
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return api_error(
+                "Til tekshiruvi noto'g'ri javob qaytardi.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
         if not language_result.get("is_russian", False):
-
-            return Response(
-                {
-                    "error":
-                        "Эссе должно быть написано на русском языке.",
-
-                    "language":
-                        language_result
-                },
-                status=status.HTTP_400_BAD_REQUEST
+            return api_error(
+                "Эссе должно быть написано на русском языке.",
+                status.HTTP_400_BAD_REQUEST,
+                language=language_result,
             )
 
-        # =================================================
-        # 6. AI ORQALI TEKSHIRISH
-        # =================================================
-
+        # 6. AI orqali tekshirish
         try:
-
             ai_result = check_essay_with_ai(
                 essay_text=essay_text,
-                topic=topic
+                topic=topic,
             )
 
-        except Exception as e:
-
-            print(
-                "========== AI ERROR =========="
+        except ValueError as exc:
+            return api_error(
+                str(exc),
+                status.HTTP_400_BAD_REQUEST,
             )
 
-            print(str(e))
-
-            print(
-                "=============================="
+        except Exception:
+            logger.exception("AI essay tekshiruvida xatolik")
+            return api_error(
+                "AI tekshiruvda xatolik yuz berdi.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-            return Response(
-                {
-                    "error":
-                        "AI tekshiruvda xatolik.",
-
-                    "details":
-                        str(e)
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        print(
-            "========== AI RESULT =========="
-        )
-
-        print(ai_result)
-
-        print(
-            "==============================="
-        )
-
-        # =================================================
-        # AI RESULT DICT BO'LISHI KERAK
-        # =================================================
 
         if not isinstance(ai_result, dict):
-
-            return Response(
-                {
-                    "error":
-                        "AI noto'g'ri formatda javob qaytardi.",
-
-                    "ai_result":
-                        ai_result
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return api_error(
+                "AI noto'g'ri formatda javob qaytardi.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        # =================================================
-        # 7. MAVZU MOSLIGINI TEKSHIRISH
-        # =================================================
-
-        topic_check = ai_result.get(
-            "topic_check",
-            {}
-        )
+        # 7. Mavzu mosligini tekshirish
+        topic_check = ai_result.get("topic_check")
 
         if not isinstance(topic_check, dict):
-
-            return Response(
-                {
-                    "error":
-                        "AI topic_check qaytarmadi.",
-
-                    "ai_result":
-                        ai_result
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return api_error(
+                "AI mavzu tekshiruvi natijasini qaytarmadi.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        topic_valid = topic_check.get(
-            "valid"
-        )
+        topic_valid = topic_check.get("valid")
+        topic_match = topic_check.get("match")
 
-        topic_match = topic_check.get(
-            "match"
-        )
-
-        topic_reason = str(
-            topic_check.get(
-                "reason",
-                ""
-            ) or ""
-        ).strip()
-
-        # =================================================
-        # VALID TEKSHIRISH
-        # =================================================
-
-        if not isinstance(
-            topic_valid,
-            bool
-        ):
-
-            return Response(
-                {
-                    "error":
-                        "AI topic_check.valid noto'g'ri.",
-
-                    "topic_check":
-                        topic_check
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        if not isinstance(topic_valid, bool):
+            return api_error(
+                "Mavzu tekshiruvi natijasi noto'g'ri.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        # =================================================
-        # MATCH TEKSHIRISH
-        # =================================================
-
-        if topic_match not in {
-            "full",
-            "partial",
-            "none"
-        }:
-
-            return Response(
-                {
-                    "error":
-                        "AI topic_check.match noto'g'ri.",
-
-                    "topic_check":
-                        topic_check
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        if topic_match not in ("full", "partial", "none"):
+            return api_error(
+                "Mavzuga moslik qiymati noto'g'ri.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-        print(
-            "========== TOPIC CHECK =========="
-        )
-
-        print(
-            "Valid:",
-            topic_valid
-        )
-
-        print(
-            "Match:",
-            topic_match
-        )
-
-        print(
-            "Reason:",
-            topic_reason
-        )
-
-        print(
-            "================================="
-        )
-
-        # =================================================
-        # MAVZU NOTO'G'RI
-        # =================================================
 
         if not topic_valid:
-
-            return Response(
-                {
-                    "error":
-                        "Тема письменной работы некорректна.",
-
-                    "topic_check":
-                        topic_check
-                },
-                status=status.HTTP_400_BAD_REQUEST
+            return api_error(
+                "Тема письменной работы некорректна.",
+                status.HTTP_400_BAD_REQUEST,
+                topic_check=topic_check,
             )
-
-        # =================================================
-        # ESSE MAVZUGA MOS EMAS
-        # =================================================
 
         if topic_match == "none":
-
-            return Response(
-                {
-                    "error":
-                        "Эссе не соответствует теме.",
-
-                    "topic_check":
-                        topic_check
-                },
-                status=status.HTTP_400_BAD_REQUEST
+            return api_error(
+                "Эссе не соответствует теме.",
+                status.HTTP_400_BAD_REQUEST,
+                topic_check=topic_check,
             )
 
-        # =================================================
-        # 8. 6 TA KRITERIYNI OLISH
-        # =================================================
+        # 8. Oltita baholash mezonini tekshirish
+        criteria = ai_result.get("criteria")
 
-        criteria = ai_result.get(
-            "criteria",
-            []
-        )
-
-        print(
-            "========== CRITERIA =========="
-        )
-
-        for i, criterion in enumerate(
-            criteria,
-            1
-        ):
-
-            print(
-                f"K{i}: {criterion}"
+        if not isinstance(criteria, list) or len(criteria) != 6:
+            return api_error(
+                "AI 6 ta baholash mezoni bo'yicha natija "
+                "qaytarmadi.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-        print(
-            "=============================="
-        )
-
-        # =================================================
-        # 9. AYNAN 6 TA KRITERIY
-        # =================================================
-
-        if len(criteria) != 6:
-
-            return Response(
-                {
-                    "error":
-                        "AI 6 ta mezon bo'yicha natija qaytarmadi.",
-
-                    "criteria_count":
-                        len(criteria),
-
-                    "ai_result":
-                        ai_result
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        # =================================================
-        # 10. KRITERIY MAX BALLARI
-        # =================================================
-
-        max_scores = [
-            20,
-            15,
-            10,
-            10,
-            10,
-            10
-        ]
-
-        # =================================================
-        # KRITERIY NOMLARI
-        # =================================================
-
-        criterion_names = [
-
-            "Раскрытие темы (содержание)",
-
-            "Аргументация и примеры",
-
-            "Структура и логика",
-
-            "Лексика и стилистика",
-
-            "Грамотность",
-
-            "Оригинальность (самостоятельность мысли)"
-        ]
-
-        # =================================================
-        # 11. BALLARNI TEKSHIRISH
-        # =================================================
 
         cleaned_criteria = []
+        total_score = 0.0
 
-        for index, criterion in enumerate(
-            criteria
+        for index, (definition, criterion) in enumerate(
+            zip(CRITERIA, criteria),
+            start=1,
         ):
-
-            # -------------------------------------------------
-            # DICT TEKSHIRISH
-            # -------------------------------------------------
-
-            if not isinstance(
-                criterion,
-                dict
-            ):
-
-                return Response(
-                    {
-                        "error":
-                            (
-                                f"K{index + 1} kriteriy "
-                                "noto'g'ri formatda."
-                            ),
-
-                        "criterion":
-                            criterion
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            if not isinstance(criterion, dict):
+                return api_error(
+                    f"{index}-mezon noto'g'ri formatda.",
+                    status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
-
-            # -------------------------------------------------
-            # SCORE
-            # -------------------------------------------------
 
             try:
-
-                score = float(
-                    criterion.get(
-                        "score",
-                        0
-                    )
+                score = float(criterion.get("score"))
+            except (TypeError, ValueError):
+                return api_error(
+                    f"{index}-mezon uchun ball noto'g'ri.",
+                    status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
 
-            except (
-                TypeError,
-                ValueError
+            max_score = definition["max_score"]
+
+            if (
+                not 0 <= score <= max_score
+                or not (score * 2).is_integer()
             ):
-
-                return Response(
-                    {
-                        "error":
-                            (
-                                f"K{index + 1} kriteriy "
-                                "uchun noto'g'ri ball qaytdi."
-                            ),
-
-                        "criterion":
-                            criterion
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                return api_error(
+                    f"{index}-mezon balli noto'g'ri. "
+                    f"Ruxsat etilgan oraliq: 0–{max_score}, "
+                    "qadam 0.5.",
+                    status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
-
-            # -------------------------------------------------
-            # MAX SCORE
-            # -------------------------------------------------
-
-            max_score = max_scores[index]
-
-            # -------------------------------------------------
-            # 0 DAN MAX GACHA
-            # -------------------------------------------------
-
-            if score < 0 or score > max_score:
-
-                return Response(
-                    {
-                        "error":
-                            (
-                                f"K{index + 1} kriteriy uchun "
-                                f"ball noto'g'ri: {score}. "
-                                f"Ruxsat etilgan oraliq: "
-                                f"0–{max_score}."
-                            ),
-
-                        "criterion":
-                            criterion
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
-
-            # -------------------------------------------------
-            # 0.5 QADAM
-            # -------------------------------------------------
-
-            if not (
-                abs(
-                    score * 2
-                    -
-                    round(score * 2)
-                )
-                <
-                1e-9
-            ):
-
-                return Response(
-                    {
-                        "error":
-                            (
-                                f"K{index + 1} kriteriy "
-                                "uchun ball 0.5 qadamda "
-                                "bo'lishi kerak."
-                            ),
-
-                        "criterion":
-                            criterion
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
-
-            # -------------------------------------------------
-            # REASON
-            # -------------------------------------------------
 
             reason = str(
-                criterion.get(
-                    "reason",
-                    ""
-                ) or ""
+                criterion.get("reason") or ""
             ).strip()
 
             if not reason:
-
-                return Response(
-                    {
-                        "error":
-                            (
-                                f"K{index + 1} kriteriy "
-                                "uchun reason bo'sh."
-                            ),
-
-                        "criterion":
-                            criterion
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                return api_error(
+                    f"{index}-mezon uchun izoh qaytarilmadi.",
+                    status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
 
-            # -------------------------------------------------
-            # TOZALANGAN KRITERIY
-            # -------------------------------------------------
+            if score.is_integer():
+                score = int(score)
 
-            cleaned_score = (
-                int(score)
-                if score.is_integer()
-                else score
+            cleaned_criteria.append({
+                "name": definition["name"],
+                "score": score,
+                "max_score": max_score,
+                "reason": reason,
+            })
+
+            total_score += score
+
+        if not 0 <= total_score <= MAX_TOTAL:
+            return api_error(
+                "Hisoblangan umumiy ball noto'g'ri.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-            cleaned_criteria.append(
-                {
-                    "name":
-                        criterion_names[index],
-
-                    "score":
-                        cleaned_score,
-
-                    "max_score":
-                        max_score,
-
-                    "reason":
-                        reason
-                }
-            )
-
-        # =================================================
-        # 12. TOTAL SCORE
-        # =================================================
-        #
-        # 20 + 15 + 10 + 10 + 10 + 10 = 75
-        #
-        # AI yuborgan total_score ishlatilmaydi.
-        # Backend o'zi hisoblaydi.
-        # =================================================
-
-        total_score = sum(
-            float(
-                criterion["score"]
-            )
-            for criterion
-            in cleaned_criteria
-        )
-
-        print(
-            "========== TOTAL SCORE =========="
-        )
-
-        print(total_score)
-
-        print(
-            "================================="
-        )
-
-        # =================================================
-        # 13. TOTAL SCORENI TEKSHIRISH
-        # =================================================
-
-        if (
-            total_score < 0
-            or
-            total_score > 75
-        ):
-
-            return Response(
-                {
-                    "error":
-                        "Hisoblangan umumiy ball noto'g'ri.",
-
-                    "total_score":
-                        total_score
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        # =================================================
-        # INTEGER QILISH
-        # =================================================
 
         if total_score.is_integer():
             total_score = int(total_score)
 
-        # =================================================
-        # 14. AI REVIEW
-        # =================================================
-
+        # 9. Taqriz, xatolar va tavsiyalar
         ai_review = str(
-            ai_result.get(
-                "review",
-                ""
-            ) or ""
+            ai_result.get("review") or ""
         ).strip()
 
-        # =================================================
-        # 15. ERRORS
-        # =================================================
-
-        errors = ai_result.get(
-            "errors",
-            []
+        errors = clean_errors(
+            ai_result.get("errors", []),
+            essay_text,
         )
 
-        if not isinstance(
-            errors,
-            list
-        ):
-
-            errors = []
-
-        cleaned_errors = []
-
-        for error in errors:
-
-            if not isinstance(
-                error,
-                dict
-            ):
-                continue
-
-            fragment = str(
-                error.get(
-                    "fragment",
-                    ""
-                ) or ""
-            ).strip()
-
-            if not fragment:
-                continue
-
-            # AI essayda yo'q fragmentni
-            # qaytarmasligi uchun
-
-            if fragment not in essay_text:
-                continue
-
-            cleaned_errors.append(
-                {
-                    "fragment":
-                        fragment,
-
-                    "type":
-                        str(
-                            error.get(
-                                "type",
-                                "Языковая ошибка"
-                            )
-                            or
-                            "Языковая ошибка"
-                        ).strip(),
-
-                    "correction":
-                        str(
-                            error.get(
-                                "correction",
-                                ""
-                            )
-                            or
-                            ""
-                        ).strip(),
-
-                    "explanation":
-                        str(
-                            error.get(
-                                "explanation",
-                                ""
-                            )
-                            or
-                            ""
-                        ).strip()
-                }
-            )
-
-        # =================================================
-        # 16. RECOMMENDATIONS
-        # =================================================
-
-        recommendations = ai_result.get(
-            "recommendations",
-            []
+        recommendations = clean_recommendations(
+            ai_result.get("recommendations", [])
         )
 
-        if not isinstance(
-            recommendations,
-            list
-        ):
-
-            recommendations = []
-
-        recommendations = [
-
-            str(item).strip()
-
-            for item
-            in recommendations
-
-            if str(item).strip()
-        ]
-
-        # =================================================
-        # 17. DATABASE GA SAQLASH
-        # =================================================
-
+        # 10. Natijani bazaga saqlash
         try:
+            essay_fields = {
+                "user": user,
+                "essay_text": essay_text,
+                "topic": topic,
+                "student_name": student_name,
+                "word_count": word_count,
+                "character_count": character_count,
+                "paragraph_count": paragraph_count,
+                "total_score": total_score,
+                "ai_review": ai_review,
+                "errors": errors,
+                "recommendations": recommendations,
+            }
 
-            essay = Essay.objects.create(
+            for definition, criterion in zip(
+                CRITERIA,
+                cleaned_criteria,
+            ):
+                essay_fields[definition["score_field"]] = (
+                    criterion["score"]
+                )
+                essay_fields[definition["reason_field"]] = (
+                    criterion["reason"]
+                )
 
-                user=user,
+            essay = Essay.objects.create(**essay_fields)
 
-                essay_text=
-                    essay_text,
-
-                topic=
-                    topic,
-
-                student_name=
-                    student_name,
-
-                word_count=
-                    word_count,
-
-                character_count=
-                    character_count,
-
-                paragraph_count=
-                    paragraph_count,
-
-                # =========================================
-                # 75 BALL
-                # =========================================
-
-                total_score=
-                    total_score,
-
-                # =========================================
-                # 6 TA CRITERION SCORE
-                # =========================================
-
-                criterion_1=
-                    cleaned_criteria[0]["score"],
-
-                criterion_2=
-                    cleaned_criteria[1]["score"],
-
-                criterion_3=
-                    cleaned_criteria[2]["score"],
-
-                criterion_4=
-                    cleaned_criteria[3]["score"],
-
-                criterion_5=
-                    cleaned_criteria[4]["score"],
-
-                criterion_6=
-                    cleaned_criteria[5]["score"],
-
-                # =========================================
-                # 6 TA CRITERION REASON
-                # =========================================
-
-                criterion_1_reason=
-                    cleaned_criteria[0]["reason"],
-
-                criterion_2_reason=
-                    cleaned_criteria[1]["reason"],
-
-                criterion_3_reason=
-                    cleaned_criteria[2]["reason"],
-
-                criterion_4_reason=
-                    cleaned_criteria[3]["reason"],
-
-                criterion_5_reason=
-                    cleaned_criteria[4]["reason"],
-
-                criterion_6_reason=
-                    cleaned_criteria[5]["reason"],
-
-                # =========================================
-                # REVIEW
-                # =========================================
-
-                ai_review=
-                    ai_review,
-
-                # =========================================
-                # ERRORS
-                # =========================================
-
-                errors=
-                    cleaned_errors,
-
-                # =========================================
-                # RECOMMENDATIONS
-                # =========================================
-
-                recommendations=
-                    recommendations
+        except Exception:
+            logger.exception("Essay bazaga saqlanmadi")
+            return api_error(
+                "Essayni bazaga saqlashda xatolik yuz berdi.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        except Exception as e:
+        # 11. Frontend uchun natija
+        response_criteria = []
 
-            print(
-                "========== DATABASE ERROR =========="
-            )
+        for definition in CRITERIA:
+            response_criteria.append({
+                "name": definition["name"],
+                "score": getattr(
+                    essay,
+                    definition["score_field"],
+                ),
+                "max_score": definition["max_score"],
+                "reason": getattr(
+                    essay,
+                    definition["reason_field"],
+                ),
+            })
 
-            print(str(e))
-
-            print(
-                "===================================="
-            )
-
-            return Response(
-                {
-                    "error":
-                        "Essayni databasega saqlashda xatolik.",
-
-                    "details":
-                        str(e)
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        # =================================================
-        # 18. FRONTENDGA NATIJA
-        # =================================================
+        # 12. Limit haqida ma'lumot
+        if unlimited:
+            limit_info = {
+                "unlimited": True,
+                "daily_limit": None,
+                "used_today": None,
+                "remaining": None,
+            }
+        else:
+            used_today = get_daily_usage(user)
+            limit_info = {
+                "unlimited": False,
+                "daily_limit": DAILY_ESSAY_LIMIT,
+                "used_today": used_today,
+                "remaining": max(
+                    DAILY_ESSAY_LIMIT - used_today,
+                    0,
+                ),
+            }
 
         return Response(
             {
-
-                "id":
-                    essay.id,
-
-                # =========================================
-                # UMUMIY BALL
-                # =========================================
-
-                "total_score":
-                    essay.total_score,
-
-                "max_score":
-                    75,
-
-                # =========================================
-                # STATISTIKA
-                # =========================================
-
-                "word_count":
-                    essay.word_count,
-
-                "character_count":
-                    essay.character_count,
-
-                "paragraph_count":
-                    essay.paragraph_count,
-
-                # =========================================
-                # REVIEW
-                # =========================================
-
-                "review":
-                    essay.ai_review,
-
-                # =========================================
-                # TOPIC
-                # =========================================
-
-                "topic_check":
-                    topic_check,
-
-                # =========================================
-                # ERRORS
-                # =========================================
-
-                "errors":
-                    essay.errors,
-
-                # =========================================
-                # RECOMMENDATIONS
-                # =========================================
-
-                "recommendations":
-                    essay.recommendations,
-
-                # =========================================
-                # 6 TA KRITERIY
-                # =========================================
-
-                "criteria": [
-
-                    {
-                        "name":
-                            criterion_names[0],
-
-                        "score":
-                            essay.criterion_1,
-
-                        "max_score":
-                            20,
-
-                        "reason":
-                            essay.criterion_1_reason
-                    },
-
-                    {
-                        "name":
-                            criterion_names[1],
-
-                        "score":
-                            essay.criterion_2,
-
-                        "max_score":
-                            15,
-
-                        "reason":
-                            essay.criterion_2_reason
-                    },
-
-                    {
-                        "name":
-                            criterion_names[2],
-
-                        "score":
-                            essay.criterion_3,
-
-                        "max_score":
-                            10,
-
-                        "reason":
-                            essay.criterion_3_reason
-                    },
-
-                    {
-                        "name":
-                            criterion_names[3],
-
-                        "score":
-                            essay.criterion_4,
-
-                        "max_score":
-                            10,
-
-                        "reason":
-                            essay.criterion_4_reason
-                    },
-
-                    {
-                        "name":
-                            criterion_names[4],
-
-                        "score":
-                            essay.criterion_5,
-
-                        "max_score":
-                            10,
-
-                        "reason":
-                            essay.criterion_5_reason
-                    },
-
-                    {
-                        "name":
-                            criterion_names[5],
-
-                        "score":
-                            essay.criterion_6,
-
-                        "max_score":
-                            10,
-
-                        "reason":
-                            essay.criterion_6_reason
-                    }
-                ]
+                "id": essay.id,
+                "total_score": essay.total_score,
+                "max_score": MAX_TOTAL,
+                "word_count": essay.word_count,
+                "character_count": essay.character_count,
+                "paragraph_count": essay.paragraph_count,
+                "review": essay.ai_review,
+                "topic_check": topic_check,
+                "errors": essay.errors,
+                "recommendations": essay.recommendations,
+                "criteria": response_criteria,
+                "usage": limit_info,
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
+
 class OCRAPIView(APIView):
+    """
+    Rasm yoki PDF ichidagi matnni ajratadi.
+    Faqat tizimga kirgan foydalanuvchi foydalanishi mumkin.
+    """
+
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         uploaded_file = request.FILES.get("file")
 
         if not uploaded_file:
-            return Response(
-                {"error": "Fayl yuborilmadi."},
-                status=status.HTTP_400_BAD_REQUEST
+            return api_error(
+                "Fayl yuborilmadi.",
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        allowed_extensions = (
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".webp",
+            ".pdf",
+        )
+        filename = str(
+            uploaded_file.name or ""
+        ).lower()
+
+        if not filename.endswith(allowed_extensions):
+            return api_error(
+                "Faqat JPG, PNG, WEBP yoki PDF fayllar qabul qilinadi.",
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Katta fayllarni cheklash: 10 MB
+        max_size = 10 * 1024 * 1024
+
+        if uploaded_file.size > max_size:
+            return api_error(
+                "Fayl hajmi 10 MB dan oshmasligi kerak.",
+                status.HTTP_400_BAD_REQUEST,
             )
 
         try:
+            # 1. Fayldan matn olish
             text = file_to_text(uploaded_file)
 
-            if not text.strip():
-                return Response(
-                    {"error": "Fayldan matn topilmadi."},
-                    status=status.HTTP_400_BAD_REQUEST
+            print("\n=== OCR API ASL MATNI ===", flush=True)
+            print(text, flush=True)
+            print("=== OCR MATNI TUGADI ===\n", flush=True)
+
+            if not text or not text.strip():
+                return api_error(
+                    "Fayldan matn topilmadi.",
+                    status.HTTP_400_BAD_REQUEST,
                 )
 
-            return Response({
-                "text": text,
-                "word_count": len(text.split()),
-                "character_count": len(text)
-            }, status=status.HTTP_200_OK)
+            text = text.strip()
 
-        except ValueError as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            # 2. Mavzu va esseni ajratish
+            parsed = parse_ocr_text(text)
 
-        except Exception as e:
-            print("========== OCR ERROR ==========")
-            print(str(e))
-            print("===============================")
+            if not isinstance(parsed, dict):
+                parsed = {}
+
+            topic = str(
+                parsed.get("topic") or ""
+            ).strip()
+
+            essay = str(
+                parsed.get("essay") or ""
+            ).strip()
+
+            if not essay:
+                essay = text
+
+            # 3. Statistika
+            word_count = len(essay.split())
+            character_count = len(essay)
+
+            if not essay.strip():
+                return api_error(
+                    "Rasmdan matn o'qilmadi. "
+                    "Rasmni aniqroq qilib qayta yuklang.",
+                    status.HTTP_400_BAD_REQUEST,
+                )
 
             return Response(
                 {
-                    "error": "OCR ishlashida xatolik.",
-                    "details": str(e)
+                    "text": text,
+                    "topic": topic,
+                    "essay": essay,
+                    "word_count": word_count,
+                    "character_count": character_count,
+                    "topic_word_count": len(topic.split()),
+                    "topic_character_count": len(topic),
+                    "parser_method": parsed.get(
+                        "method",
+                        "ai_semantic",
+                    ),
                 },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_200_OK,
+            )
+
+        except ValueError as exc:
+            return api_error(
+                str(exc),
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        except Exception:
+            logger.exception("OCR ishlashida xatolik")
+            return api_error(
+                "OCR ishlashida xatolik yuz berdi.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+def ona_tili_page(request):
+    return render(request, "ona-tili.html")
+
+
+def matematika_page(request):
+    return render(request, "matematika.html")
+
+
+
+class EssayUsageAPIView(APIView):
+    """Foydalanuvchining bugungi esse limitini qaytaradi."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        try:
+            unlimited = has_unlimited_access(user)
+
+            if unlimited:
+                return Response({
+                    "unlimited": True,
+                    "daily_limit": None,
+                    "used_today": None,
+                    "remaining": None,
+                })
+
+            used_today = get_daily_usage(user)
+            remaining = max(DAILY_ESSAY_LIMIT - used_today, 0)
+
+            return Response({
+                "unlimited": False,
+                "daily_limit": DAILY_ESSAY_LIMIT,
+                "used_today": used_today,
+                "remaining": remaining,
+            })
+
+        except Exception:
+            logger.exception("Esse limitini olishda xatolik")
+            return api_error(
+                "Limit ma'lumotlarini olishda xatolik yuz berdi.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

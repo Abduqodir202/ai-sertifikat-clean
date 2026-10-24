@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Результат проверки эссе — AI Sertifikat</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px 14px;
+            background: #e5eff5;
+            color: #29485c;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .card {
+            margin-bottom: 18px;
+            padding: 24px;
+            background: #f8fbfc;
+            border: 1px solid #d5e5e9;
+            border-radius: 16px;
+        }
+
+        h1, h2, h3 {
+            color: #294b63;
+        }
+
+        h1 {
+            font-size: 25px;
+        }
+
+        h2 {
+            font-size: 19px;
+            margin-top: 0;
+        }
+
+        .muted {
+            color: #738895;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .score {
+            margin: 15px 0;
+            color: #398b78;
+            font-size: 34px;
+            font-weight: 700;
+        }
+
+        .essay-text {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            line-height: 1.9;
+            font-size: 15px;
+        }
+
+        .criterion {
+            padding: 15px 0;
+            border-bottom: 1px solid #e1eaed;
+        }
+
+        .criterion:last-child {
+            border-bottom: none;
+        }
+
+        .criterion-heading {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-weight: 600;
+        }
+
+        .criterion-score {
+            flex-shrink: 0;
+            color: #398b78;
+        }
+
+        .item {
+            margin: 12px 0;
+            padding: 14px;
+            border-radius: 10px;
+            background: white;
+            border: 1px solid #dce7ea;
+            overflow-wrap: anywhere;
+        }
+
+        .error-fragment {
+            color: #b43c45;
+            font-weight: 700;
+        }
+
+        .correction {
+            color: #24745d;
+            font-weight: 600;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 17px;
+            border-radius: 9px;
+            background: #397b83;
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .button:hover {
+            background: #2d676e;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 18px;
+            }
+
+            .criterion-heading {
+                font-size: 13px;
+            }
+
+            .score {
+                font-size: 29px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<main class="container">
+
+    <p>
+        <a class="button" href="{% url 'profile' %}">
+            ← Вернуться в личный кабинет
+        </a>
+    </p>
+
+    <section class="card">
+        <h1>
+            {% if essay.topic %}
+                {{ essay.topic }}
+            {% else %}
+                Результат проверки эссе
+            {% endif %}
+        </h1>
+
+        <p class="muted">
+            Дата проверки: {{ essay.created_at|date:"d.m.Y, H:i" }}
+        </p>
+
+        <div class="score">
+            {{ essay.total_score|floatformat:"-1" }} / 75 баллов
+        </div>
+
+        <p class="muted">
+            Слов: {{ essay.word_count }} ·
+            Символов: {{ essay.character_count }} ·
+            Абзацев: {{ essay.paragraph_count }}
+        </p>
+    </section>
+
+    <section class="card">
+        <h2>Текст эссе</h2>
+        <div class="essay-text">{{ essay.essay_text }}</div>
+    </section>
+
+    <section class="card">
+        <h2>Оценивание по критериям</h2>
+
+        {% for criterion in criteria %}
+            <div class="criterion">
+                <div class="criterion-heading">
+                    <span>
+                        {{ forloop.counter }}. {{ criterion.name }}
+                    </span>
+
+                    <span class="criterion-score">
+                        {{ criterion.score|floatformat:"-1" }}
+                        / {{ criterion.max_score }}
+                    </span>
+                </div>
+
+                <p class="muted">
+                    {{ criterion.reason|default:"Комментарий не сохранён." }}
+                </p>
+            </div>
+        {% empty %}
+            <p class="muted">
+                Данные об оценивании по критериям отсутствуют.
+            </p>
+        {% endfor %}
+    </section>
+
+    <section class="card">
+        <h2>Анализ искусственного интеллекта</h2>
+
+        {% if essay.ai_review %}
+            <p class="essay-text">{{ essay.ai_review }}</p>
+        {% else %}
+            <p class="muted">
+                Общий анализ не сохранён.
+            </p>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h2>Обнаруженные ошибки</h2>
+
+        {% for error in essay.errors %}
+            <div class="item">
+                {% if error.fragment %}
+                    <p>
+                        <strong>Ошибка:</strong>
+                        <span class="error-fragment">
+                            {{ error.fragment }}
+                        </span>
+                    </p>
+                {% endif %}
+
+                {% if error.correction %}
+                    <p>
+                        <strong>Правильный вариант:</strong>
+                        <span class="correction">
+                            {{ error.correction }}
+                        </span>
+                    </p>
+                {% endif %}
+
+                {% if error.type %}
+                    <p>
+                        <strong>Тип ошибки:</strong>
+                        {{ error.type }}
+                    </p>
+                {% endif %}
+
+                {% if error.explanation %}
+                    <p>
+                        <strong>Пояснение:</strong>
+                        {{ error.explanation }}
+                    </p>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p class="muted">
+                Сохранённых ошибок нет.
+            </p>
+        {% endfor %}
+    </section>
+
+    <section class="card">
+        <h2>Рекомендации</h2>
+
+        {% for recommendation in essay.recommendations %}
+            <div class="item">
+                {{ recommendation }}
+            </div>
+        {% empty %}
+            <p class="muted">
+                Рекомендации не сохранены.
+            </p>
+        {% endfor %}
+    </section>
+
+    <p>
+        <a class="button" href="/rus-esse/">
+            Проверить новое эссе →
+        </a>
+    </p>
+
+</main>
+</body>
+</html>

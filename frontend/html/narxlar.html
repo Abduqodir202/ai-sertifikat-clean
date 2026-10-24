@@ -1,0 +1,1129 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#eaf5ff">
+    <meta name="description" content="AI Sertifikat tariflari. Esselarni tekshiring, xatolarni aniqlang va Milliy sertifikatga tayyorlaning.">
+    <title>Tariflar — AI Sertifikat</title>
+
+    <style>
+        :root {
+            --green: #0bb28d;
+            --green-dark: #078b70;
+            --blue: #5d72eb;
+            --heading: #285477;
+            --text: #70869b;
+            --bg: #eaf5fc;
+            --border: #dcecf3;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--heading);
+            background:
+                radial-gradient(circle at 10% 20%, rgba(0,184,148,.08), transparent 30%),
+                radial-gradient(circle at 90% 25%, rgba(93,114,235,.08), transparent 30%),
+                var(--bg);
+            line-height: 1.6;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* NAVBAR */
+
+        .main-navbar {
+            width: 100%;
+            background: #eaf5ff;
+            border-bottom: 1px solid #d8eaf7;
+        }
+
+        .navbar-inner {
+            width: min(1150px, calc(100% - 40px));
+            min-height: 76px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .site-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            color: #234c6b;
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .site-logo {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 13px;
+            color: white;
+            background: var(--green);
+            font-size: 17px;
+            font-weight: 900;
+            box-shadow: 0 5px 14px rgba(11,178,141,.15);
+        }
+
+        .site-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        .site-nav a {
+            color: #627d94;
+            font-size: 14px;
+            transition: color .2s ease;
+        }
+
+        .site-nav a:hover,
+        .site-nav a.active {
+            color: var(--green-dark);
+        }
+
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .navbar-actions form {
+            margin: 0;
+        }
+
+        .profile-button,
+        .logout-button {
+            min-height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 17px;
+            border: 1px solid #d7e7f3;
+            border-radius: 12px;
+            color: #315772;
+            background: #f7fbff;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .2s ease;
+        }
+
+        .profile-button {
+            color: white;
+            background: var(--green);
+            border-color: var(--green);
+        }
+
+        .profile-button:hover {
+            background: var(--green-dark);
+        }
+
+        .logout-button:hover {
+            background: white;
+            border-color: #a9ccdf;
+        }
+
+        /* UMUMIY KONTEYNER */
+
+        .page-container {
+            width: min(1150px, calc(100% - 40px));
+            margin: 0 auto;
+        }
+
+        /* SARLAVHA */
+
+        .hero {
+            padding: 65px 0 42px;
+            text-align: center;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 17px;
+            color: var(--green-dark);
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        .eyebrow-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+        }
+
+        .hero h1 {
+            max-width: 800px;
+            margin: 0 auto 17px;
+            color: var(--heading);
+            font-size: clamp(30px, 4vw, 39px);
+            font-weight: 800;
+            line-height: 1.25;
+            letter-spacing: -.7px;
+        }
+
+        .hero p {
+            max-width: 660px;
+            margin: 0 auto;
+            color: var(--text);
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .hero-highlight {
+            color: var(--green-dark);
+            font-weight: 700;
+        }
+
+        /* TARIF KARTALARI */
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            align-items: stretch;
+            gap: 22px;
+            padding-bottom: 35px;
+        }
+
+        .pricing-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            height: 100%;
+            padding: 29px 24px 23px;
+            overflow: hidden;
+            border: 1px solid #d6e9f0;
+            border-radius: 25px;
+            background: white;
+            box-shadow: 0 12px 35px rgba(39,82,115,.07);
+            transition: transform .28s ease, box-shadow .28s ease;
+        }
+
+        .pricing-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            opacity: 0;
+            background: linear-gradient(90deg, #0bb28d, #56c9e8);
+            transition: opacity .25s ease;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 22px 45px rgba(39,82,115,.13);
+        }
+
+        .pricing-card:hover::before {
+            opacity: 1;
+        }
+
+        .pricing-card.popular {
+            border: 2px solid var(--green);
+            padding: 28px 23px 22px;
+        }
+
+        .pricing-card.unlimited {
+            border-color: #7185ff;
+        }
+
+        .pricing-card.unlimited::before {
+            background: linear-gradient(90deg, #5d72eb, #99a6ff);
+        }
+
+        .plan-badge {
+            align-self: flex-start;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 32px;
+            margin-bottom: 18px;
+            padding: 6px 13px;
+            border-radius: 999px;
+            color: #07836b;
+            background: #e0f7ef;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .unlimited .plan-badge {
+            color: #4f63d6;
+            background: #edf0ff;
+        }
+
+        .plan-icon {
+            width: 62px;
+            height: 62px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 19px;
+            border-radius: 19px;
+            background: #e0f7ef;
+            font-size: 29px;
+            transition: transform .28s ease;
+        }
+
+        .pricing-card:hover .plan-icon {
+            transform: rotate(-5deg) scale(1.06);
+        }
+
+        .unlimited .plan-icon {
+            background: #edf0ff;
+        }
+
+        .plan-title {
+            margin-bottom: 14px;
+            color: var(--heading);
+            font-size: 23px;
+            font-weight: 800;
+        }
+
+        .price {
+            margin-top: 12px;
+            color: var(--green);
+            font-size: clamp(27px, 2.5vw, 34px);
+            font-weight: 900;
+            line-height: 1.35;
+            letter-spacing: -.8px;
+            overflow-wrap: anywhere;
+        }
+
+        .unlimited .price {
+            color: var(--blue);
+        }
+
+        .price-period {
+            min-height: 25px;
+            margin-top: 4px;
+            color: #8499aa;
+            font-size: 13px;
+        }
+
+        .plan-description {
+            min-height: 80px;
+            margin: 15px 0 20px;
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.85;
+        }
+
+        .plan-divider {
+            width: 100%;
+            height: 1px;
+            margin-bottom: 19px;
+            background: #e8f0f5;
+        }
+
+        .features-title {
+            margin-bottom: 13px;
+            color: #3d5d78;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .features {
+            display: grid;
+            gap: 13px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            color: #647d92;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .check-icon {
+            flex: 0 0 19px;
+            width: 19px;
+            height: 19px;
+            display: grid;
+            place-items: center;
+            margin-top: 1px;
+            border-radius: 50%;
+            color: #079c7b;
+            background: #e1f8f0;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .pricing-card-bottom {
+            display: flex;
+            flex-direction: column;
+            margin-top: auto;
+            padding-top: 27px;
+        }
+
+        .pricing-button {
+            width: 100%;
+            min-height: 51px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            border: 0;
+            border-radius: 13px;
+            color: white;
+            background: var(--green);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.5;
+            text-align: center;
+            cursor: pointer;
+            transition: transform .2s ease, filter .2s ease, box-shadow .2s ease;
+        }
+
+        .pricing-button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.04);
+            box-shadow: 0 8px 18px rgba(10,173,136,.19);
+        }
+
+        .button-free {
+            color: #285477;
+            background: #e7f3fa;
+        }
+
+        .button-unlimited {
+            background: var(--blue);
+        }
+
+        .pricing-note {
+            min-height: 42px;
+            margin-top: 14px;
+            color: #8297a9;
+            font-size: 12px;
+            line-height: 1.7;
+            text-align: center;
+        }
+
+        /* PULLIK TARIF UCHUN 6 TA SABAB */
+
+        .premium-section {
+            padding: 60px 0 70px;
+        }
+
+        .premium-heading {
+            max-width: 760px;
+            margin: 0 auto 38px;
+            text-align: center;
+        }
+
+        .premium-label {
+            display: inline-block;
+            margin-bottom: 13px;
+            color: var(--green-dark);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.8px;
+        }
+
+        .premium-heading h2 {
+            margin-bottom: 14px;
+            color: var(--heading);
+            font-size: clamp(26px, 3.5vw, 36px);
+            font-weight: 850;
+            line-height: 1.3;
+            letter-spacing: -.7px;
+        }
+
+        .premium-heading p {
+            color: var(--text);
+            font-size: 15px;
+            line-height: 1.9;
+        }
+
+        .premium-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .premium-card {
+            position: relative;
+            min-height: 245px;
+            padding: 26px 24px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            background: rgba(255,255,255,.94);
+            box-shadow: 0 10px 30px rgba(39,82,115,.045);
+            transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+        }
+
+        .premium-card:hover {
+            transform: translateY(-6px);
+            border-color: #a8dfd2;
+            box-shadow: 0 18px 38px rgba(39,82,115,.10);
+        }
+
+        .premium-icon {
+            width: 55px;
+            height: 55px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 20px;
+            border-radius: 17px;
+            font-size: 25px;
+            transition: transform .25s ease;
+        }
+
+        .premium-card:hover .premium-icon {
+            transform: scale(1.08) rotate(-4deg);
+        }
+
+        .icon-green { background: #e0f7ef; }
+        .icon-blue { background: #e8efff; }
+        .icon-purple { background: #f0eaff; }
+        .icon-orange { background: #fff0df; }
+        .icon-pink { background: #ffeaf2; }
+        .icon-cyan { background: #e0f7fc; }
+
+        .premium-number {
+            position: absolute;
+            top: 25px;
+            right: 23px;
+            color: #dceaf1;
+            font-size: 27px;
+            font-weight: 900;
+        }
+
+        .premium-card h3 {
+            position: relative;
+            margin-bottom: 11px;
+            color: var(--heading);
+            font-size: 17px;
+            font-weight: 800;
+            line-height: 1.5;
+        }
+
+        .premium-card p {
+            color: var(--text);
+            font-size: 13px;
+            line-height: 1.85;
+        }
+
+        .premium-cta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 25px;
+            margin-top: 28px;
+            padding: 28px 30px;
+            border: 1px solid #cfece3;
+            border-radius: 22px;
+            background: linear-gradient(110deg, #e1f8f0, #edf5ff);
+        }
+
+        .premium-cta h3 {
+            margin-bottom: 6px;
+            color: var(--heading);
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .premium-cta p {
+            color: var(--text);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .premium-cta-button {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+            padding: 12px 20px;
+            border-radius: 12px;
+            color: white;
+            background: var(--green);
+            font-size: 13px;
+            font-weight: 800;
+            transition: transform .2s ease, background .2s ease;
+        }
+
+        .premium-cta-button:hover {
+            transform: translateY(-2px);
+            background: var(--green-dark);
+        }
+
+        /* AFZALLIKLAR */
+
+        .benefits-section {
+            padding: 15px 0 75px;
+        }
+
+        .benefits-heading {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .section-label {
+            display: inline-block;
+            margin-bottom: 12px;
+            color: var(--green-dark);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.8px;
+        }
+
+        .benefits-heading h2 {
+            margin-bottom: 12px;
+            color: var(--heading);
+            font-size: clamp(25px, 3vw, 33px);
+            font-weight: 800;
+        }
+
+        .benefits-heading p {
+            max-width: 650px;
+            margin: 0 auto;
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .benefit-card {
+            padding: 27px 25px;
+            border: 1px solid var(--border);
+            border-radius: 21px;
+            background: rgba(255,255,255,.9);
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(39,82,115,.09);
+        }
+
+        .benefit-icon {
+            width: 54px;
+            height: 54px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 17px;
+            border-radius: 16px;
+            background: #e0f7ef;
+            font-size: 25px;
+        }
+
+        .benefit-card:nth-child(2) .benefit-icon {
+            background: #eaf1ff;
+        }
+
+        .benefit-card:nth-child(3) .benefit-icon {
+            background: #fff1df;
+        }
+
+        .benefit-card h3 {
+            margin-bottom: 9px;
+            color: var(--heading);
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .benefit-card p {
+            color: var(--text);
+            font-size: 13px;
+            line-height: 1.85;
+        }
+
+        /* FOOTER */
+
+        .footer {
+            padding: 25px 20px;
+            border-top: 1px solid #dcecf3;
+            background: rgba(255,255,255,.55);
+            text-align: center;
+        }
+
+        .footer p {
+            color: #8297a9;
+            font-size: 13px;
+        }
+
+        /* PLANSHEТ */
+
+        @media (max-width: 950px) {
+            .navbar-inner {
+                width: calc(100% - 32px);
+                flex-wrap: wrap;
+                padding: 12px 0;
+            }
+
+            .site-nav {
+                gap: 18px;
+            }
+
+            .pricing-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .pricing-card:last-child {
+                grid-column: 1 / -1;
+            }
+
+            .premium-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        /* TELEFON */
+
+        @media (max-width: 650px) {
+            .navbar-inner {
+                width: calc(100% - 28px);
+                gap: 12px;
+            }
+
+            .site-brand {
+                font-size: 17px;
+            }
+
+            .site-logo {
+                width: 36px;
+                height: 36px;
+            }
+
+            .navbar-actions {
+                gap: 6px;
+            }
+
+            .profile-button,
+            .logout-button {
+                min-height: 36px;
+                padding: 0 10px;
+                font-size: 12px;
+            }
+
+            .site-nav {
+                order: 3;
+                width: 100%;
+                justify-content: space-between;
+                gap: 10px;
+                padding: 5px 0;
+            }
+
+            .site-nav a {
+                font-size: 12px;
+            }
+
+            .page-container {
+                width: calc(100% - 30px);
+            }
+
+            .hero {
+                padding: 48px 0 30px;
+            }
+
+            .hero h1 {
+                font-size: 30px;
+                letter-spacing: -.5px;
+            }
+
+            .hero p {
+                font-size: 14px;
+            }
+
+            .pricing-grid,
+            .premium-grid,
+            .benefits-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .pricing-card,
+            .pricing-card.popular {
+                grid-column: auto;
+                min-height: 0;
+                padding: 26px 22px 22px;
+            }
+
+            .plan-description {
+                min-height: 0;
+            }
+
+            .price {
+                font-size: 32px;
+            }
+
+            .premium-section {
+                padding: 42px 0 45px;
+            }
+
+            .premium-card {
+                min-height: 0;
+                padding: 23px;
+            }
+
+            .premium-cta {
+                align-items: stretch;
+                flex-direction: column;
+                padding: 23px;
+            }
+
+            .premium-cta-button {
+                width: 100%;
+            }
+
+            .benefits-section {
+                padding: 15px 0 50px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ASOSIY MENYU -->
+    <header class="main-navbar">
+        <div class="navbar-inner">
+
+            <a href="{% url 'rus_esse' %}" class="site-brand">
+                <span class="site-logo">AI</span>
+                <span>AI Sertifikat</span>
+            </a>
+
+            <nav class="site-nav" aria-label="Asosiy menyu">
+                <a href="{% url 'rus_esse' %}#subjects">Fanlar</a>
+                <a href="{% url 'rus_esse' %}#how-it-works">Qanday ishlaydi?</a>
+                <a href="{% url 'narxlar' %}" class="active">Narxlar</a>
+                <a href="{% url 'rus_esse' %}#contact">Aloqa</a>
+            </nav>
+
+            <div class="navbar-actions">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}" class="profile-button">
+                        Profilim
+                    </a>
+
+                    <form action="{% url 'account_logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-button">Chiqish</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'account_login' %}" class="profile-button">Kirish</a>
+                    <a href="{% url 'account_signup' %}" class="logout-button">
+                        Ro‘yxatdan o‘tish
+                    </a>
+                {% endif %}
+            </div>
+
+        </div>
+    </header>
+
+    <main>
+        <div class="page-container">
+
+            <!-- SARLAVHA -->
+            <section class="hero">
+                <div class="eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    TARIFLAR
+                </div>
+
+                <h1>O‘zingizga mos tarifni tanlang</h1>
+
+                <p>
+                    AI Sertifikat yordamida esselaringizni tekshiring,
+                    xatolaringizni aniqlang va
+                    <span class="hero-highlight">Milliy sertifikat imtihoniga</span>
+                    puxta tayyorlaning.
+                </p>
+            </section>
+
+            <!-- TARIF KARTALARI -->
+            <section class="pricing-grid" id="pricing" aria-label="Tariflar">
+
+                <article class="pricing-card">
+                    <span class="plan-badge">Boshlash uchun</span>
+                    <div class="plan-icon" aria-hidden="true">🎓</div>
+                    <h2 class="plan-title">Bepul tarif</h2>
+                    <div class="price">0 so‘m</div>
+                    <p class="price-period">Har kuni bepul</p>
+
+                    <p class="plan-description">
+                        Platforma imkoniyatlaridan foydalanib,
+                        esse yozish va tahlil qilishni boshlang.
+                    </p>
+
+                    <div class="plan-divider"></div>
+                    <p class="features-title">Tarif imkoniyatlari</p>
+
+                    <ul class="features">
+                        <li><span class="check-icon">✓</span><span>Kuniga 5 ta esse tekshiruvi</span></li>
+                        <li><span class="check-icon">✓</span><span>Xatolarni aniqlash</span></li>
+                        <li><span class="check-icon">✓</span><span>Esse yozish bo‘yicha tavsiyalar</span></li>
+                    </ul>
+
+                    <div class="pricing-card-bottom">
+                        <a href="{% url 'rus_esse' %}" class="pricing-button button-free">
+                            Bepul boshlash →
+                        </a>
+                        <p class="pricing-note">Kunlik limit har kuni yangilanadi.</p>
+                    </div>
+                </article>
+
+                <article class="pricing-card popular">
+                    <span class="plan-badge">★ Eng ommabop tarif</span>
+                    <div class="plan-icon" aria-hidden="true">📝</div>
+                    <h2 class="plan-title">Oylik paket</h2>
+                    <div class="price">300 000 so‘m</div>
+                    <p class="price-period">30 kun uchun</p>
+
+                    <p class="plan-description">
+                        Muntazam tayyorlanadigan va ko‘proq esse
+                        tekshirtirishni istaydigan o‘quvchilar uchun.
+                    </p>
+
+                    <div class="plan-divider"></div>
+                    <p class="features-title">Tarif imkoniyatlari</p>
+
+                    <ul class="features">
+                        <li><span class="check-icon">✓</span><span>30 kun ichida 300 ta esse tekshiruvi</span></li>
+                        <li><span class="check-icon">✓</span><span>Xatolarni aniqlash</span></li>
+                        <li><span class="check-icon">✓</span><span>Tavsiyalar va natijalar</span></li>
+                    </ul>
+
+                    <div class="pricing-card-bottom">
+                        <a href="https://t.me/AI_Sertificat"
+                           class="pricing-button"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            Telegram orqali sotib olish →
+                        </a>
+                        <p class="pricing-note">
+                            Xarid va tarifni faollashtirish uchun Telegram orqali yozing.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="pricing-card unlimited">
+                    <span class="plan-badge">∞ Cheksiz tekshiruv</span>
+                    <div class="plan-icon" aria-hidden="true">♾️</div>
+                    <h2 class="plan-title">Unlimited</h2>
+                    <div class="price">600 000 so‘m</div>
+                    <p class="price-period">30 kun uchun</p>
+
+                    <p class="plan-description">
+                        Milliy sertifikatga jadal tayyorlanish va
+                        esselarni cheklovsiz tekshirtirish uchun.
+                    </p>
+
+                    <div class="plan-divider"></div>
+                    <p class="features-title">Tarif imkoniyatlari</p>
+
+                    <ul class="features">
+                        <li><span class="check-icon">✓</span><span>Cheksiz esse tekshiruvi</span></li>
+                        <li><span class="check-icon">✓</span><span>Batafsil tavsiyalar</span></li>
+                        <li><span class="check-icon">✓</span><span>30 kunlik foydalanish</span></li>
+                    </ul>
+
+                    <div class="pricing-card-bottom">
+                        <a href="https://t.me/AI_Sertificat"
+                           class="pricing-button button-unlimited"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            Telegram orqali sotib olish →
+                        </a>
+                        <p class="pricing-note">
+                            Xarid va tarifni faollashtirish uchun Telegram orqali yozing.
+                        </p>
+                    </div>
+                </article>
+
+            </section>
+
+            <!-- PULLIK TARIFNI TANLASH UCHUN 6 TA SABAB -->
+            <section class="premium-section">
+                <div class="premium-heading">
+                    <span class="premium-label">SIZNING RIVOJLANISHINGIZ UCHUN</span>
+                    <h2>Nima uchun pullik tarifni tanlash kerak?</h2>
+                    <p>
+                        Maqsadingizga ishonch bilan boring. AI Sertifikat bilan
+                        esselaringiz ustida ko‘proq ishlang va imtihonga puxtaroq tayyorlaning.
+                    </p>
+                </div>
+
+                <div class="premium-grid">
+
+                    <article class="premium-card">
+                        <div class="premium-icon icon-green">🚀</div>
+                        <span class="premium-number">01</span>
+                        <h3>Ko‘proq mashq qilish imkoniyati</h3>
+                        <p>
+                            Bepul tarifdagi kunlik 5 ta tekshiruv bilan cheklanib qolmang.
+                            300 talik paket yoki Unlimited orqali ko‘proq esse ustida ishlang.
+                        </p>
+                    </article>
+
+                    <article class="premium-card">
+                        <div class="premium-icon icon-blue">🎯</div>
+                        <span class="premium-number">02</span>
+                        <h3>Xatolaringizni chuqurroq tushuning</h3>
+                        <p>
+                            Essedagi kamchiliklarni aniqlang, tahlilni ko‘rib chiqing
+                            va keyingi esse yozishda xatolarni kamaytirishga harakat qiling.
+                        </p>
+                    </article>
+
+                    <article class="premium-card">
+                        <div class="premium-icon icon-purple">📈</div>
+                        <span class="premium-number">03</span>
+                        <h3>Yozish mahoratingizni rivojlantiring</h3>
+                        <p>
+                            Argument, mantiq, tuzilish va til me’yorlari ustida muntazam
+                            ishlash orqali esse yozish ko‘nikmalaringizni mustahkamlang.
+                        </p>
+                    </article>
+
+                    <article class="premium-card">
+                        <div class="premium-icon icon-orange">⏳</div>
+                        <span class="premium-number">04</span>
+                        <h3>Vaqtingizdan samarali foydalaning</h3>
+                        <p>
+                            Tekshiruv natijalarini ko‘rib chiqing, kamchiliklaringiz ustida
+                            ishlang va tayyorgarligingizni rejalashtiring.
+                        </p>
+                    </article>
+
+                    <article class="premium-card">
+                        <div class="premium-icon icon-pink">🏆</div>
+                        <span class="premium-number">05</span>
+                        <h3>Imtihonga puxtaroq tayyorlaning</h3>
+                        <p>
+                            Ko‘proq mashq va muntazam tahlil orqali Milliy sertifikat
+                            imtihoniga tayyorgarlikni tartibli olib boring.
+                        </p>
+                    </article>
+
+                    <article class="premium-card">
+                        <div class="premium-icon icon-cyan">📅</div>
+                        <span class="premium-number">06</span>
+                        <h3>30 kun davomida muntazam foydalaning</h3>
+                        <p>
+                            Pullik tarifingiz amal qiladigan davrda mashg‘ulotlaringizni
+                            rejalashtiring va tanlangan paket imkoniyatlaridan foydalaning.
+                        </p>
+                    </article>
+
+                </div>
+
+                <div class="premium-cta">
+                    <div>
+                        <h3>Bugun tayyorgarlikni yangi bosqichga olib chiqing!</h3>
+                        <p>O‘zingizga mos tarifni tanlang va mashq qilishni boshlang.</p>
+                    </div>
+
+                    <a href="#pricing" class="premium-cta-button">
+                        Tariflarni tanlash →
+                    </a>
+                </div>
+            </section>
+
+            <!-- QO‘SHIMCHA AFZALLIKLAR -->
+            <section class="benefits-section">
+                <div class="benefits-heading">
+                    <span class="section-label">NEGA AI SERTIFIKAT?</span>
+                    <h2>Tayyorgarligingizni yangi bosqichga olib chiqing</h2>
+                    <p>
+                        Har bir esse ustida ishlang, kamchiliklaringizni
+                        tushuning va yozish mahoratingizni rivojlantiring.
+                    </p>
+                </div>
+
+                <div class="benefits-grid">
+                    <article class="benefit-card">
+                        <div class="benefit-icon">🎯</div>
+                        <h3>Aniq tahlil</h3>
+                        <p>
+                            Essedagi xatolar va kamchiliklarni aniqlashga
+                            hamda ularni tushunishga yordam beradi.
+                        </p>
+                    </article>
+
+                    <article class="benefit-card">
+                        <div class="benefit-icon">📚</div>
+                        <h3>Foydali tavsiyalar</h3>
+                        <p>
+                            Yozish uslubi, mantiqiy bog‘lanishlar va
+                            argumentlarni yaxshilash uchun tavsiyalar.
+                        </p>
+                    </article>
+
+                    <article class="benefit-card">
+                        <div class="benefit-icon">🚀</div>
+                        <h3>Qulay tayyorgarlik</h3>
+                        <p>
+                            O‘zingizga qulay vaqtda esselaringiz ustida
+                            ishlang va imtihonga puxta tayyorlaning.
+                        </p>
+                    </article>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>
+            © {% now "Y" %} AI Sertifikat.
+            Milliy sertifikatga tayyorgarlikda sizning yordamchingiz.
+        </p>
+    </footer>
+
+</body>
+</html>

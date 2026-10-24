@@ -63,4 +63,29 @@ class Essay(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} — {self.total_score}/24"
+        return f"{self.user.username} — {self.total_score}/75"
+
+
+
+class UnlimitedAccess(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="unlimited_access",
+    )
+    is_active = models.BooleanField(default=False)
+    activated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+    expires_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = "Unlimited huquqi"
+        verbose_name_plural = "Unlimited huquqlari"
+
+    def __str__(self):
+        return f"{self.user.username} — Unlimited"

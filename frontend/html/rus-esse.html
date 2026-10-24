@@ -1,649 +1,618 @@
-<!DOCTYPE html>
-<html lang="ru">
+{% extends "base.html" %}
+{% load static %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block title %}Проверка эссе — AI Sertifikat{% endblock %}
 
-    <title>Проверка эссе — Русский язык и литература</title>
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/rus-esse.css' %}?v=8">
 
-    <link rel="stylesheet" href="../css/rus-esse.css">
+<style>
+.auth-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(19, 30, 49, .62);
+    backdrop-filter: blur(5px);
+}
+.auth-modal-overlay.is-open { display: flex; }
 
-    <!-- OCR UPLOAD — FORCE VISIBLE -->
-    <style>
-        .ocr-upload {
-            display: block !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-            margin: 20px 0 !important;
-            padding: 18px !important;
-            border: 1px dashed rgba(100, 200, 180, 0.55) !important;
-            border-radius: 14px !important;
-            background: rgba(20, 60, 65, 0.55) !important;
-            text-align: center !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
+.auth-modal {
+    position: relative;
+    width: 100%;
+    max-width: 430px;
+    padding: 34px 25px 27px;
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 25px 80px rgba(10, 28, 55, .24);
+    text-align: center;
+    font-family: Inter, Arial, sans-serif;
+}
 
-        .ocr-upload-label {
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            min-height: 44px !important;
-            padding: 11px 20px !important;
-            border-radius: 10px !important;
-            background: linear-gradient(
-                135deg,
-                #247b78,
-                #315f78
-            ) !important;
-            color: #ffffff !important;
-            font-size: 15px !important;
-            font-weight: 600 !important;
-            cursor: pointer !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
+.auth-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 13px;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 25px;
+    cursor: pointer;
+}
 
-        .ocr-upload-label:hover {
-            transform: translateY(-2px);
-            opacity: 0.92 !important;
-        }
+.auth-modal-icon { margin-bottom: 18px; font-size: 42px; }
 
-        .ocr-upload input[type="file"] {
-            position: absolute !important;
-            width: 1px !important;
-            height: 1px !important;
-            padding: 0 !important;
-            margin: -1px !important;
-            overflow: hidden !important;
-            clip: rect(0, 0, 0, 0) !important;
-            white-space: nowrap !important;
-            border: 0 !important;
-        }
+.auth-modal h2 {
+    margin: 0 0 13px;
+    color: #243b60;
+    font-size: 23px;
+}
 
-        .ocr-upload small,
-        #ocrStatus {
-            display: block !important;
-            margin-top: 10px !important;
-            color: #a9c8c8 !important;
-            font-size: 13px !important;
-            line-height: 1.5 !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-    </style>
-</head>
+.auth-modal-description {
+    margin: 0 0 25px;
+    color: #71829d;
+    font-size: 14px;
+    line-height: 1.8;
+}
 
-<body>
+.auth-modal-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 50px;
+    margin-top: 12px;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 13px;
+    font-weight: 700;
+    text-decoration: none !important;
+    cursor: pointer;
+    box-sizing: border-box;
+}
 
-<header class="header">
+.auth-modal-register {
+    background: linear-gradient(110deg, #3778f6, #9848f4);
+    color: #fff !important;
+}
 
-    <div class="logo">
-        <div class="logo-icon">AI</div>
-        <span>AI Sertifikat</span>
+.auth-modal-login {
+    background: #eef1ff;
+    color: #6250ff !important;
+}
+
+.auth-modal-dismiss {
+    margin-top: 17px;
+    border: none;
+    background: transparent;
+    color: #7b8ca5;
+    cursor: pointer;
+}
+
+body.auth-modal-open { overflow: hidden; }
+
+.essay-test-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 14px 16px;
+    border: 1px solid #cce6e2;
+    border-left: 4px solid #39998b;
+    border-radius: 12px;
+    background: #f0f9f8;
+    color: #526f7d;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.essay-test-notice strong {
+    display: block;
+    margin-bottom: 3px;
+    color: #267b73;
+}
+
+.essay-test-notice p { margin: 0; }
+
+.essay-usage-box {
+    margin: 0 0 20px;
+    padding: 18px;
+    border: 1px solid #d8e5f5;
+    border-radius: 16px;
+    background: #f5f9ff;
+    color: #243b60;
+}
+
+.essay-usage-box h3 {
+    margin: 0 0 8px;
+    font-size: 17px;
+}
+
+.essay-usage-box p {
+    margin: 5px 0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.essay-usage-progress {
+    width: 100%;
+    height: 8px;
+    margin: 12px 0;
+    overflow: hidden;
+    border-radius: 20px;
+    background: #dce7f5;
+}
+
+.essay-usage-progress-bar {
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #3778f6, #39998b);
+    transition: width .25s ease;
+}
+
+.essay-usage-cta {
+    margin-top: 10px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 10px;
+    background: #3778f6;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.essay-usage-cta:hover { opacity: .9; }
+
+@media (max-width: 480px) {
+    .auth-modal {
+        padding: 32px 20px 23px;
+        border-radius: 20px;
+    }
+
+    .auth-modal h2 { font-size: 21px; }
+    .auth-modal-description { font-size: 13px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Django tariflar sahifasining manzilini JavaScript uchun beradi -->
+<div
+    id="tariffs-config"
+    data-url="{% url 'narxlar' %}"
+    hidden
+></div>
+
+{% if not user.is_authenticated %}
+<div
+    id="authModalOverlay"
+    class="auth-modal-overlay is-open"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="authModalTitle"
+>
+    <div class="auth-modal">
+        <button
+            type="button"
+            class="auth-modal-close"
+            id="authModalClose"
+            aria-label="Закрыть"
+        >×</button>
+
+        <div class="auth-modal-icon" aria-hidden="true">🔐</div>
+
+        <h2 id="authModalTitle">Сначала зарегистрируйтесь!</h2>
+
+        <p class="auth-modal-description">
+            Чтобы проверить эссе, сначала зарегистрируйтесь
+            или войдите в свой аккаунт.
+        </p>
+
+        <a
+            href="/register/?next=/rus-esse/"
+            class="auth-modal-button auth-modal-register"
+        >Зарегистрироваться</a>
+
+        <a
+            href="{% url 'account_login' %}?next=/rus-esse/"
+            class="auth-modal-button auth-modal-login"
+        >Войти</a>
+
+        <button
+            type="button"
+            class="auth-modal-dismiss"
+            id="authModalDismiss"
+        >Закрыть</button>
     </div>
+</div>
+{% endif %}
 
-    <a href="index.html" class="back-btn">
-        ← Вернуться
-    </a>
+<main class="essay-page">
+    <div class="container essay-container">
 
-</header>
-
-
-<main class="container">
-
-    <!-- ================= TITLE ================= -->
-
-    <section class="page-title">
-
-        <div class="subject-badge">
-            🇺🇿 O‘zbekiston Milliy sertifikati
-            <br>
-            🇷🇺 Русский язык и литература
+        <div class="essay-test-notice">
+            <span aria-hidden="true">⚙️</span>
+            <div>
+                <strong>Режим тестирования</strong>
+                <p>
+                    AI Sertifikat находится на этапе тестирования.
+                    Оценка эссе является предварительным анализом
+                    и не гарантирует официальный результат национального сертификата.
+                </p>
+            </div>
         </div>
 
-        <h1>Проверка письменной работы</h1>
-
-        <p class="exam-subtitle">
-            O‘zbekiston Milliy sertifikati — Русский язык и литература
-        </p>
-
-        <p class="subtitle">
-            Напишите эссе и проверьте его в соответствии
-            с критериями национальной системы оценки.
-        </p>
-
-    </section>
-
-
-    <div class="content">
-
-        <!-- ================= LEFT ================= -->
-
-        <section>
-
-            <div class="card">
-
-                <!-- HEADER -->
-
-                <div class="essay-header">
-
-                    <h2 class="card-title">
-                        📝 Ваша письменная работа
-                    </h2>
-
-
-                    <!-- STUDENT NAME -->
-
-                    <div class="student-field">
-
-                        <label for="studentName">
-                            👤 Имя ученика
-                            <span>(необязательно)</span>
-                        </label>
-
-                        <input
-                            type="text"
-                            id="studentName"
-                            placeholder="Имя ученика"
-                            maxlength="150"
-                        >
-
-                    </div>
-
-                </div>
-
-
-                <!-- ================= ТЕМА ================= -->
-
-                <div class="topic-box">
-
-                    <label for="essayTopic">
-                        ТЕМА
-                    </label>
-
-                    <textarea
-                        id="essayTopic"
-                        class="topic-input"
-                        placeholder="Введите тему письменной работы..."
-                        rows="2"
-                        maxlength="500"
-                    ></textarea>
-
-                </div>
-
-
-                <!-- ================= OCR ================= -->
-
-                <div class="ocr-upload">
-
-                    <label
-                        for="essayFile"
-                        class="ocr-upload-label"
-                    >
-                        📎 Rasm yoki PDF yuklash
-                    </label>
-
-                    <input
-                        type="file"
-                        id="essayFile"
-                        accept=".jpg,.jpeg,.png,.webp,.pdf"
-                    >
-
-                    <small id="ocrStatus">
-                        JPG, PNG, WEBP yoki PDF fayl yuklashingiz mumkin.
-                    </small>
-
-                </div>
-
-
-                <!-- ================= ESSAY ================= -->
-
-                <textarea
-                    id="essayText"
-                    placeholder="Начните писать эссе здесь..."
-                    maxlength="20000"
-                ></textarea>
-
-
-                <!-- ================= COUNTERS ================= -->
-
-                <div class="counters">
-
-                    <div class="counter">
-
-                        <span id="wordCount">
-                            0
-                        </span>
-
-                        <small>
-                            слов
-                        </small>
-
-                    </div>
-
-
-                    <div class="counter">
-
-                        <span id="charCount">
-                            0
-                        </span>
-
-                        <small>
-                            символов
-                        </small>
-
-                    </div>
-
-
-                    <div class="counter">
-
-                        <span id="paragraphCount">
-                            0
-                        </span>
-
-                        <small>
-                            абзацев
-                        </small>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ================= REQUIREMENT ================= -->
-
-                <div
-                    id="wordStatus"
-                    class="word-status neutral"
-                >
-                    Введите эссе для проверки объёма.
-                </div>
-
-
-                <!-- ================= BUTTON ================= -->
-
-                <button
-                    class="check-btn"
-                    onclick="checkEssay()"
-                >
-                    🔍 Проверить эссе
-                </button>
-
+        <section class="page-title">
+            <div class="subject-badge">
+                <span>🇺🇿 Национальный сертификат Узбекистана</span>
+                <span>🇷🇺 Русский язык и литература</span>
             </div>
 
-
-            <!-- ================= RESULT ================= -->
-
-            <div
-                class="card result"
-                id="result"
-            >
-
-                <h2 class="card-title">
-                    📊 Результат проверки
-                </h2>
-
-
-                <!-- ================= SCORE ================= -->
-
-                <div class="result-score">
-
-                    <div>
-
-                        <div class="score-label">
-                            Балл за письменную работу
-                        </div>
-
-                        <div class="score-number">
-
-                            <span id="totalScore">
-                                —
-                            </span>
-
-                            <span class="score-max">
-                                / 75
-                            </span>
-
-                        </div>
-
-
-                        <div class="score-scale-note">
-                            Максимальный результат — 75 баллов
-                        </div>
-
-
-                        <div class="official-score">
-
-                            <div class="official-score-item">
-
-                                <span>
-                                    75-балльная шкала
-                                </span>
-
-                                <strong id="score75">
-                                    — / 75
-                                </strong>
-
-                            </div>
-
-
-                            <div class="official-score-item">
-
-                                <span>
-                                    Уровень
-                                </span>
-
-                                <strong id="scoreLevel">
-                                    —
-                                </strong>
-
-                            </div>
-
-                        </div>
-
+            <div class="title-layout">
+                <div>
+                    <div class="eyebrow">
+                        <span class="eyebrow-dot"></span>
+                        AI POWERED ESSAY CHECKER
                     </div>
 
+                    <h1 id="page-heading">
+                        Проверка <span>письменной работы</span>
+                    </h1>
 
-                    <div class="success-icon">
-                        ✓
-                    </div>
-
-                </div>
-
-
-                <!-- ================= CRITERIA ================= -->
-
-                <div
-                    class="criteria-result"
-                    id="criteriaResult"
-                >
-
-                    <div class="result-item">
-
-                        <span>
-                            1. Раскрытие темы (содержание)
-                        </span>
-
-                        <strong id="criterion1">
-                            — / 20
-                        </strong>
-
-                    </div>
-
-
-                    <div class="result-item">
-
-                        <span>
-                            2. Аргументация и примеры
-                        </span>
-
-                        <strong id="criterion2">
-                            — / 15
-                        </strong>
-
-                    </div>
-
-
-                    <div class="result-item">
-
-                        <span>
-                            3. Структура и логика
-                        </span>
-
-                        <strong id="criterion3">
-                            — / 10
-                        </strong>
-
-                    </div>
-
-
-                    <div class="result-item">
-
-                        <span>
-                            4. Лексика и стилистика
-                        </span>
-
-                        <strong id="criterion4">
-                            — / 10
-                        </strong>
-
-                    </div>
-
-
-                    <div class="result-item">
-
-                        <span>
-                            5. Грамотность
-                        </span>
-
-                        <strong id="criterion5">
-                            — / 10
-                        </strong>
-
-                    </div>
-
-
-                    <div class="result-item">
-
-                        <span>
-                            6. Оригинальность
-                            (самостоятельность мысли)
-                        </span>
-
-                        <strong id="criterion6">
-                            — / 10
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ================= REVIEW ================= -->
-
-                <div class="review-box">
-
-                    <h3>
-                        💬 Рецензия
-                    </h3>
-
-                    <p id="reviewText">
-                        После подключения AI здесь появится
-                        подробная рецензия на вашу работу.
+                    <p class="exam-subtitle">
+                        Национальный сертификат Узбекистана — Русский язык и литература
                     </p>
 
+                    <p class="subtitle">
+                        Напишите эссе. Искусственный интеллект поможет
+                        проанализировать текст, выявить ошибки и дать рекомендации.
+                    </p>
                 </div>
 
+                <div class="title-art" aria-hidden="true">
+                    <div class="art-orbit orbit-one"></div>
+                    <div class="art-orbit orbit-two"></div>
 
-                <!-- ================= ESSAY WITH ERRORS ================= -->
+                    <div class="art-document">
+                        <span class="document-line line-long"></span>
+                        <span class="document-line"></span>
+                        <span class="document-line line-short"></span>
+                        <span class="document-highlight"></span>
+                        <span class="document-line"></span>
+                    </div>
 
-                <div class="essay-review-section">
-
-                    <h3>
-                        📝 Эссе с выделенными ошибками
-                    </h3>
-
-                    <div
-                        id="highlightedEssay"
-                        class="highlighted-essay"
-                    ></div>
-
+                    <div class="art-ai">AI</div>
+                    <div class="art-sparkle sparkle-one">✦</div>
+                    <div class="art-sparkle sparkle-two">✧</div>
                 </div>
-
-
-                <!-- ================= ERRORS ================= -->
-
-                <div class="errors-section">
-
-                    <h3>
-                        ⚠️ Ошибки
-                    </h3>
-
-                    <div id="errorsList"></div>
-
-                </div>
-
-
-                <!-- ================= RECOMMENDATIONS ================= -->
-
-                <div class="recommendations-section">
-
-                    <h3>
-                        💡 Рекомендации
-                    </h3>
-
-                    <div id="recommendationsList"></div>
-
-                </div>
-
             </div>
-
         </section>
 
+        <div class="essay-layout">
+            <section class="essay-main">
+                <div class="card essay-card">
 
-        <!-- ================= RIGHT ================= -->
+                    {% if user.is_authenticated %}
+                    <div
+                        id="essayUsageBox"
+                        class="essay-usage-box"
+                        aria-live="polite"
+                    >
+                        <h3>📊 Ежедневные проверки</h3>
+                        <p>Загрузка информации о проверках...</p>
+                    </div>
+                    {% endif %}
 
-        <aside>
+                    <div class="essay-header">
+                        <div class="section-heading">
+                            <span class="heading-icon">✍</span>
+                            <div>
+                                <h2 class="card-title">Ваша письменная работа</h2>
+                                <p class="section-caption">
+                                    Заполните поля и отправьте работу на проверку
+                                </p>
+                            </div>
+                        </div>
 
-            <div class="card">
+                        <div class="student-field">
+                            <label for="studentName">
+                                Имя ученика
+                                <span>(необязательно)</span>
+                            </label>
 
-                <h2 class="card-title">
-                    📋 Критерии
-                </h2>
-
-
-                <div class="criteria">
-
-                    <div class="criterion">
-
-                        <span>
-                            1. Раскрытие темы
-                        </span>
-
-                        <strong>
-                            0–20
-                        </strong>
-
+                            <input
+                                type="text"
+                                id="studentName"
+                                name="student_name"
+                                placeholder="Ваше имя"
+                                maxlength="150"
+                                autocomplete="name"
+                            >
+                        </div>
                     </div>
 
-
-                    <div class="criterion">
-
-                        <span>
-                            2. Аргументация и примеры
-                        </span>
-
-                        <strong>
-                            0–15
-                        </strong>
-
+                    <div class="topic-box">
+                        <label for="essayTopic">ТЕМА ЭССЕ</label>
+                        <textarea
+                            id="essayTopic"
+                            class="topic-input"
+                            name="essayTopic"
+                            placeholder="Введите тему письменной работы..."
+                            rows="2"
+                            maxlength="500"
+                        ></textarea>
                     </div>
 
+                    <div class="essay-input-group">
+                        <div class="input-heading">
+                            <label for="essayText">ТЕКСТ ЭССЕ</label>
+                            <span class="input-hint">
+                                Введите текст на русском языке
+                            </span>
+                        </div>
 
-                    <div class="criterion">
-
-                        <span>
-                            3. Структура и логика
-                        </span>
-
-                        <strong>
-                            0–10
-                        </strong>
-
+                        <textarea
+                            id="essayText"
+                            name="essayText"
+                            placeholder="Начните писать эссе здесь..."
+                            maxlength="20000"
+                        ></textarea>
                     </div>
 
+                    <div class="counters">
+                        <div class="counter">
+                            <span id="wordCount">0</span>
+                            <small>слов</small>
+                        </div>
 
-                    <div class="criterion">
+                        <div class="counter">
+                            <span id="charCount">0</span>
+                            <small>символов</small>
+                        </div>
 
-                        <span>
-                            4. Лексика и стилистика
-                        </span>
-
-                        <strong>
-                            0–10
-                        </strong>
-
+                        <div class="counter">
+                            <span id="paragraphCount">0</span>
+                            <small>абзацев</small>
+                        </div>
                     </div>
 
-
-                    <div class="criterion">
-
-                        <span>
-                            5. Грамотность
-                        </span>
-
-                        <strong>
-                            0–10
-                        </strong>
-
+                    <div
+                        id="wordStatus"
+                        class="word-status neutral"
+                        aria-live="polite"
+                    >
+                        Введите эссе, чтобы увидеть статистику текста.
                     </div>
 
+                    <button
+                        type="button"
+                        class="check-btn"
+                        id="checkEssayButton"
+                        onclick="handleEssayCheck()"
+                    >
+                        <span class="button-search-icon" aria-hidden="true">⌕</span>
+                        Проверить эссе
+                        <span class="button-arrow" aria-hidden="true">→</span>
+                    </button>
 
-                    <div class="criterion">
+                    <p class="form-note">
+                        <span aria-hidden="true">🔒</span>
+                        Проверьте текст перед отправкой на анализ.
+                    </p>
+                </div>
 
-                        <span>
-                            6. Оригинальность
-                        </span>
-
-                        <strong>
-                            0–10
-                        </strong>
-
+                <div class="card result" id="result" aria-live="polite">
+                    <div class="result-heading">
+                        <div>
+                            <div class="eyebrow">РЕЗУЛЬТАТ АНАЛИЗА</div>
+                            <h2 class="card-title">Результаты проверки</h2>
+                        </div>
+                        <div class="result-status-icon" aria-hidden="true">✓</div>
                     </div>
 
+                    <div class="result-score">
+                        <div>
+                            <div class="score-label">Итоговый балл</div>
+                            <div class="score-number">
+                                <span id="totalScore">—</span>
+                                <span class="score-max">/ 75</span>
+                            </div>
+                            <div class="score-scale-note">
+                                Итог зависит от оценки по критериям
+                            </div>
+                        </div>
+                        <div class="score-badge">AI ANALYSIS</div>
+                    </div>
+
+                    <div
+                        id="scoreLevel"
+                        class="score-level"
+                        style="margin-top:12px;padding:12px 16px;border-radius:12px;background:#e3f7f1;color:#087f68;font-size:18px;font-weight:700;"
+                    >Уровень: —</div>
+
+                    <div class="review-box">
+                        <h3>💬 Развёрнутая рецензия</h3>
+                        <p id="reviewText">
+                            После проверки здесь появится анализ вашей работы.
+                        </p>
+                    </div>
+
+                    <div class="criteria-result" id="criteriaResult"></div>
+
+                    <div class="essay-review-section">
+                        <h3>📝 Текст работы</h3>
+                        <div id="highlightedEssay" class="highlighted-essay"></div>
+                    </div>
+
+                    <div class="errors-section">
+                        <h3>⚠️ Найденные ошибки</h3>
+                        <div id="errorsList"></div>
+                    </div>
+
+                    <div class="recommendations-section">
+                        <h3>💡 Рекомендации</h3>
+                        <div id="recommendationsList"></div>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="criteria-sidebar">
+                <div class="card criteria-card">
+                    <div class="criteria-card-heading">
+                        <span class="heading-icon">▤</span>
+                        <div>
+                            <h2 class="card-title">Критерии оценки</h2>
+                            <p class="section-caption">Система оценивания работы</p>
+                        </div>
+                    </div>
+
+                    <div class="criteria">
+                        <div class="criterion">
+                            <div class="criterion-number">01</div>
+                            <span>Раскрытие темы</span>
+                            <strong>0–20</strong>
+                        </div>
+
+                        <div class="criterion">
+                            <div class="criterion-number">02</div>
+                            <span>Аргументация и примеры</span>
+                            <strong>0–15</strong>
+                        </div>
+
+                        <div class="criterion">
+                            <div class="criterion-number">03</div>
+                            <span>Структура и логика</span>
+                            <strong>0–10</strong>
+                        </div>
+
+                        <div class="criterion">
+                            <div class="criterion-number">04</div>
+                            <span>Лексика и стилистика</span>
+                            <strong>0–10</strong>
+                        </div>
+
+                        <div class="criterion">
+                            <div class="criterion-number">05</div>
+                            <span>Грамотность</span>
+                            <strong>0–10</strong>
+                        </div>
+
+                        <div class="criterion">
+                            <div class="criterion-number">06</div>
+                            <span>Оригинальность</span>
+                            <strong>0–10</strong>
+                        </div>
+                    </div>
 
                     <div class="criterion-total">
-
-                        <span>
-                            <strong>
-                                ИТОГО
-                            </strong>
-                        </span>
-
-                        <strong>
-                            75 баллов
-                        </strong>
-
+                        <div>
+                            <span>Максимальный результат</span>
+                            <strong>75 баллов</strong>
+                        </div>
+                        <div class="total-icon">✦</div>
                     </div>
 
+                    <div class="info-box">
+                        <div class="info-icon">i</div>
+                        <div>
+                            <strong>Важно</strong>
+                            <p>
+                                При оценивании учитываются тема, содержание,
+                                структура текста, аргументация и языковая грамотность.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="privacy-note">
+                        <span aria-hidden="true">✧</span>
+                        AI помогает анализировать текст и выявлять ошибки.
+                    </div>
                 </div>
-
-
-                <!-- ================= INFO ================= -->
-
-                <div class="info-box">
-
-                    <strong>
-                        Важно
-                    </strong>
-
-                    <p>
-                        Если работа содержит менее 100 слов,
-                        итоговая оценка должна учитывать
-                        установленное правило минимальной оценки.
-                    </p>
-
-                    <p>
-                        Если эссе не написано или написано
-                        полностью/частично на другом языке,
-                        работа оценивается в 0 баллов.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </aside>
-
+            </aside>
+        </div>
     </div>
-
 </main>
 
+{% endblock %}
 
-<script src="../js/rus-esse.js"></script>
+{% block extra_js %}
+<script src="{% static 'js/rus-esse.js' %}?v=13"></script>
 
-</body>
+<script>
+(function () {
+    const overlay = document.getElementById("authModalOverlay");
+    const closeButton = document.getElementById("authModalClose");
+    const dismissButton = document.getElementById("authModalDismiss");
 
-</html>
+    {% if not user.is_authenticated %}
+
+    if (overlay) {
+        document.body.classList.add("auth-modal-open");
+    }
+
+    function closeAuthModal() {
+        if (!overlay) return;
+        overlay.classList.remove("is-open");
+        document.body.classList.remove("auth-modal-open");
+    }
+
+    function showAuthModal() {
+        if (!overlay) return;
+        overlay.classList.add("is-open");
+        document.body.classList.add("auth-modal-open");
+    }
+
+    if (closeButton) {
+        closeButton.addEventListener("click", closeAuthModal);
+    }
+
+    if (dismissButton) {
+        dismissButton.addEventListener("click", closeAuthModal);
+    }
+
+    if (overlay) {
+        overlay.addEventListener("click", function (event) {
+            if (event.target === overlay) {
+                closeAuthModal();
+            }
+        });
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (
+            event.key === "Escape" &&
+            overlay &&
+            overlay.classList.contains("is-open")
+        ) {
+            closeAuthModal();
+        }
+    });
+
+    window.handleEssayCheck = function () {
+        showAuthModal();
+    };
+
+    {% else %}
+
+    window.handleEssayCheck = function () {
+        if (typeof window.checkEssay === "function") {
+            window.checkEssay();
+        } else {
+            console.error(
+                "Функция checkEssay() не найдена. Проверьте файл rus-esse.js."
+            );
+        }
+    };
+
+    {% endif %}
+})();
+</script>
+{% endblock %}

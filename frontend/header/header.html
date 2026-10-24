@@ -1,0 +1,56 @@
+<header class="navbar">
+    <div class="container nav-content">
+
+        <!-- LOGO -->
+        <a href="/" class="logo">
+            <span class="logo-icon">AI</span>
+            <span>AI Sertifikat</span>
+        </a>
+
+        <!-- NAVIGATION -->
+        <nav>
+            <a href="/#fanlar">Fanlar</a>
+            <a href="/#qanday">Qanday ishlaydi?</a>
+            <a href="{% url 'narxlar' %}">Narxlar</a>
+            <a href="{% url 'aloqa' %}">Aloqa</a>
+        </nav>
+
+        <!-- AUTH BUTTONS -->
+        <div class="nav-buttons">
+
+            {% if user.is_authenticated %}
+
+            <!-- Tizimga kirgan foydalanuvchi -->
+            <a href="/profile/" class="btn btn-primary">
+                Profilim
+            </a>
+
+            <form method="post"
+                  action="{% url 'account_logout' %}"
+                  class="logout-form">
+                {% csrf_token %}
+
+                <button type="submit" class="btn btn-login">
+                    Chiqish
+                </button>
+            </form>
+
+            {% else %}
+
+            <!-- Tizimga kirmagan foydalanuvchi -->
+            <a href="{% url 'account_login' %}"
+               class="btn btn-login">
+                Kirish
+            </a>
+
+            <a href="{% url 'register' %}"
+               class="btn btn-primary">
+                Ro‘yxatdan o‘tish
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+</header>

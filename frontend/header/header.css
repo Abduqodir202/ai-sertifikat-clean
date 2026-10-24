@@ -1,0 +1,197 @@
+
+/* Umumiy header va footer */
+
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    background: rgba(234, 246, 255, 0.96);
+    border-bottom: 1px solid #d3e6f3;
+    backdrop-filter: blur(12px);
+}
+
+.nav-content {
+    min-height: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #173b55;
+    font-size: 20px;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.logo-icon {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #0caf88;
+    color: #fff;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.navbar nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.navbar nav a {
+    color: #58758b;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.navbar nav a:hover {
+    color: #0874a8;
+}
+
+.nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 18px;
+    border-radius: 11px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn-login {
+    background: #f5fbff;
+    color: #294b63;
+    border: 1px solid #d3e6f3;
+}
+
+.btn-primary {
+    background: #0caf88;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #078b69;
+}
+
+/* Footer sahifa pastida turishi uchun */
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.site-footer {
+    width: 100%;
+    margin-top: auto;
+    padding: 40px 0;
+    background: #d9edf9;
+    border-top: 1px solid #c8e1f1;
+}
+
+.footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.footer-content p {
+    margin-top: 8px;
+    color: #58758b;
+    font-size: 13px;
+}
+
+.footer-copyright {
+    color: #58758b;
+    font-size: 12px;
+}
+
+@media (max-width: 950px) {
+    .navbar nav {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .nav-content {
+        gap: 8px;
+        min-height: 68px;
+    }
+
+    .logo {
+        font-size: 15px;
+        gap: 7px;
+    }
+
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .nav-buttons {
+        gap: 6px;
+    }
+
+    .btn {
+        padding: 9px 10px;
+        font-size: 11px;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.logout-form {
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
+}
+
+.logout-form .btn {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+@media (max-width: 768px) {
+    .nav-buttons {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}

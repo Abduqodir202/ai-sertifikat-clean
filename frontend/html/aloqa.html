@@ -1,0 +1,188 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Aloqa — AI Sertifikat{% endblock %}
+
+{% block content %}
+
+<style>
+    .contact-page {
+        min-height: 75vh;
+        padding: 60px 20px;
+        background: #eaf5fc;
+        font-family: Arial, sans-serif;
+    }
+
+    .contact-container {
+        max-width: 1000px;
+        margin: auto;
+    }
+
+    .contact-header {
+        margin-bottom: 35px;
+        text-align: center;
+    }
+
+    .contact-label {
+        color: #0ba783;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 2px;
+    }
+
+    .contact-header h1 {
+        margin: 15px 0;
+        color: #244b67;
+        font-size: 36px;
+    }
+
+    .contact-header p {
+        color: #6b8295;
+        font-size: 15px;
+        line-height: 1.8;
+    }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .contact-card {
+        padding: 30px;
+        border: 1px solid #d8e8f0;
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 12px 35px rgba(39, 85, 112, .05);
+    }
+
+    .contact-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 58px;
+        height: 58px;
+        margin-bottom: 20px;
+        border-radius: 16px;
+        background: #e4f5ef;
+        font-size: 27px;
+    }
+
+    .contact-card h2 {
+        margin: 0 0 12px;
+        color: #294e68;
+        font-size: 21px;
+    }
+
+    .contact-card p {
+        color: #718699;
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .contact-link {
+        display: inline-block;
+        margin-top: 8px;
+        color: #0a9d79 !important;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none !important;
+        overflow-wrap: anywhere;
+    }
+
+    .contact-link:hover {
+        text-decoration: underline !important;
+    }
+
+    .contact-notice {
+        margin-top: 25px;
+        padding: 18px 20px;
+        border-left: 4px solid #39998b;
+        border-radius: 12px;
+        background: #f4faf9;
+        color: #58758a;
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    @media (max-width: 650px) {
+        .contact-page {
+            padding: 40px 14px;
+        }
+
+        .contact-header h1 {
+            font-size: 28px;
+        }
+
+        .contact-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .contact-card {
+            padding: 24px;
+        }
+    }
+</style>
+
+<section class="contact-page">
+    <div class="contact-container">
+
+        <header class="contact-header">
+            <span class="contact-label">ALOQA</span>
+
+            <h1>Biz bilan bog‘laning</h1>
+
+            <p>
+                Savol, taklif yoki muammo bormi?
+                Sizning fikringiz biz uchun muhim.
+            </p>
+        </header>
+
+        <div class="contact-grid">
+
+            <article class="contact-card">
+                <div class="contact-icon">💬</div>
+
+                <h2>Telegram</h2>
+
+                <p>
+                    Savollaringiz va takliflaringizni
+                    Telegram orqali yuborishingiz mumkin.
+                </p>
+
+                <!-- Haqiqiy Telegram manzilini shu yerga yozing -->
+                <span class="contact-link">
+                    @AI_Sertificat
+                </span>
+            </article>
+
+            <article class="contact-card">
+                <div class="contact-icon">📧</div>
+
+                <h2>Elektron pochta</h2>
+
+                <p>
+                    Platforma bilan bog‘liq savollar va
+                    takliflar uchun email manzili.
+                </p>
+
+                <!-- Haqiqiy email manzilini shu yerga yozing -->
+                <span class="contact-link">
+                    Email manzili tez orada qo‘shiladi
+                </span>
+            </article>
+
+        </div>
+
+        <div class="contact-notice">
+            <strong>⚙️ Sinov rejimi</strong><br>
+            AI Sertifikat hozirda ishlab chiqish va sinov
+            bosqichida. Aloqa ma’lumotlari tayyor bo‘lgach,
+            ushbu sahifaga joylashtiriladi.
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

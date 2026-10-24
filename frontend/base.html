@@ -1,0 +1,31 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}AI Sertifikat{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'header/header.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    {% include "header/header.html" %}
+
+    <main class="page-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% include "header/footer.html" %}
+
+    {% block extra_js %}
+        <script src="{% static 'js/main.js' %}"></script>
+    {% endblock %}
+
+</body>
+</html>

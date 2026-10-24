@@ -1,3 +1,4 @@
+
 /* =========================
    GLOBAL
 ========================= */
@@ -9,25 +10,25 @@
 }
 
 :root {
-    --bg: #070b10;
-    --bg-secondary: #0d131b;
-    --card: #111923;
-    --card-hover: #16212d;
+    --bg: #eaf6ff;
+    --bg-secondary: #dff0fc;
+    --card: #f7fbff;
+    --card-hover: #edf7ff;
 
-    --white: #ffffff;
-    --text: #e8edf2;
-    --muted: #8b98a7;
+    --white: #12334a;
+    --text: #23465e;
+    --muted: #58758b;
 
-    --green: #20e58a;
-    --green-dark: #12b86c;
+    --green: #0cae83;
+    --green-dark: #078b69;
 
-    --blue: #2388ff;
-    --blue-light: #42a5ff;
+    --blue: #1683d8;
+    --blue-light: #0874c5;
 
-    --red: #ff4057;
-    --red-dark: #d92840;
+    --red: #e34e67;
+    --red-dark: #c73550;
 
-    --border: rgba(255, 255, 255, 0.08);
+    --border: rgba(29, 91, 125, 0.16);
 
     --container: 1180px;
 }
@@ -59,7 +60,6 @@ button {
     margin: 0 auto;
 }
 
-
 /* =========================
    NAVBAR
 ========================= */
@@ -68,16 +68,13 @@ button {
     position: sticky;
     top: 0;
     z-index: 1000;
-
-    background: rgba(7, 11, 16, 0.88);
+    background: rgba(234, 246, 255, 0.94);
     backdrop-filter: blur(16px);
-
     border-bottom: 1px solid var(--border);
 }
 
 .nav-content {
     min-height: 76px;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -88,7 +85,6 @@ button {
     display: flex;
     align-items: center;
     gap: 10px;
-
     font-size: 20px;
     font-weight: 800;
     color: var(--white);
@@ -97,20 +93,15 @@ button {
 .logo-icon {
     width: 42px;
     height: 42px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     border-radius: 12px;
-
     background: var(--green);
-    color: #06120c;
-
+    color: #ffffff;
     font-size: 14px;
     font-weight: 900;
-
-    box-shadow: 0 0 25px rgba(32, 229, 138, 0.25);
+    box-shadow: 0 0 25px rgba(12, 174, 131, 0.18);
 }
 
 nav {
@@ -133,38 +124,32 @@ nav a:hover {
     gap: 10px;
 }
 
-
 /* =========================
    BUTTONS
 ========================= */
 
 .btn {
     padding: 11px 18px;
-
     border-radius: 10px;
-
     font-size: 14px;
     font-weight: 700;
-
     transition: 0.25s;
 }
 
 .btn-primary {
     background: var(--green);
-    color: #06120c;
-
-    box-shadow: 0 8px 25px rgba(32, 229, 138, 0.18);
+    color: #ffffff;
+    box-shadow: 0 8px 25px rgba(12, 174, 131, 0.18);
 }
 
 .btn-primary:hover {
-    background: #3af09b;
+    background: var(--green-dark);
     transform: translateY(-2px);
 }
 
 .btn-login {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.5);
     color: var(--text);
-
     border: 1px solid var(--border);
 }
 
@@ -175,7 +160,6 @@ nav a:hover {
 .btn-outline {
     background: transparent;
     color: var(--white);
-
     border: 1px solid var(--border);
 }
 
@@ -188,34 +172,27 @@ nav a:hover {
     font-size: 15px;
 }
 
-
 /* =========================
    HERO
 ========================= */
 
 .hero {
     min-height: 680px;
-
     display: flex;
     align-items: center;
-
     position: relative;
     overflow: hidden;
+    background: linear-gradient(180deg, #eaf6ff 0%, #e5f3fd 100%);
 }
 
 .hero::before {
     content: "";
-
     position: absolute;
-
     width: 500px;
     height: 500px;
-
     left: -200px;
     top: 50px;
-
-    background: rgba(32, 229, 138, 0.07);
-
+    background: rgba(47, 175, 219, 0.13);
     filter: blur(100px);
     border-radius: 50%;
 }
@@ -223,12 +200,9 @@ nav a:hover {
 .hero-content {
     display: grid;
     grid-template-columns: 1.05fr 0.95fr;
-
     gap: 70px;
-
     align-items: center;
 }
-
 
 /* =========================
    HERO TEXT
@@ -241,58 +215,41 @@ nav a:hover {
 
 .badge {
     display: inline-block;
-
     padding: 7px 13px;
-
     margin-bottom: 20px;
-
     border-radius: 50px;
-
-    background: rgba(32, 229, 138, 0.08);
-
-    border: 1px solid rgba(32, 229, 138, 0.2);
-
-    color: var(--green);
-
+    background: rgba(12, 174, 131, 0.09);
+    border: 1px solid rgba(12, 174, 131, 0.24);
+    color: var(--green-dark);
     font-size: 12px;
     font-weight: 700;
 }
 
 .hero h1 {
     font-size: clamp(42px, 5vw, 68px);
-
     line-height: 1.05;
-
     letter-spacing: -2px;
-
     color: var(--white);
-
     margin-bottom: 25px;
 }
 
 .hero h1 span {
-    color: var(--green);
+    color: var(--green-dark);
 }
 
 .hero-text > p {
     max-width: 620px;
-
     color: var(--muted);
-
     font-size: 17px;
-
     line-height: 1.8;
-
     margin-bottom: 32px;
 }
 
 .hero-buttons {
     display: flex;
     gap: 12px;
-
     margin-bottom: 40px;
 }
-
 
 /* =========================
    FEATURES
@@ -301,7 +258,6 @@ nav a:hover {
 .features {
     display: flex;
     gap: 25px;
-
     flex-wrap: wrap;
 }
 
@@ -314,36 +270,26 @@ nav a:hover {
 .feature > span {
     width: 34px;
     height: 34px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     border-radius: 9px;
-
-    background: var(--card);
-
-    color: var(--green);
-
+    background: #e5f3fc;
+    color: var(--green-dark);
     border: 1px solid var(--border);
 }
 
 .feature strong {
     display: block;
-
     font-size: 12px;
-
     color: var(--white);
 }
 
 .feature small {
     display: block;
-
     color: var(--muted);
-
     font-size: 10px;
 }
-
 
 /* =========================
    HERO VISUAL
@@ -351,9 +297,7 @@ nav a:hover {
 
 .hero-visual {
     min-height: 480px;
-
     position: relative;
-
     display: flex;
     align-items: center;
     justify-content: center;
@@ -361,20 +305,15 @@ nav a:hover {
 
 .glow {
     position: absolute;
-
     border-radius: 50%;
-
     filter: blur(80px);
-
-    opacity: 0.35;
+    opacity: 0.25;
 }
 
 .glow.green {
     width: 180px;
     height: 180px;
-
     background: var(--green);
-
     top: 50px;
     right: 50px;
 }
@@ -382,9 +321,7 @@ nav a:hover {
 .glow.blue {
     width: 150px;
     height: 150px;
-
     background: var(--blue);
-
     bottom: 70px;
     left: 50px;
 }
@@ -392,38 +329,27 @@ nav a:hover {
 .glow.red {
     width: 120px;
     height: 120px;
-
     background: var(--red);
-
     bottom: 20px;
     right: 80px;
 }
 
 .books {
     position: relative;
-
     width: 340px;
-
     display: flex;
     flex-direction: column;
-
     gap: 14px;
-
     transform: rotate(-5deg);
 }
 
 .book {
     padding: 22px 25px;
-
     border-radius: 15px;
-
     font-size: 18px;
     font-weight: 800;
-
-    border: 1px solid rgba(255, 255, 255, 0.12);
-
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 12px 30px rgba(37, 93, 127, 0.12);
     transition: 0.3s;
 }
 
@@ -432,35 +358,19 @@ nav a:hover {
 }
 
 .book.blue {
-    background: linear-gradient(
-        135deg,
-        #0c3970,
-        #155ca8
-    );
-
-    color: #dceeff;
+    background: linear-gradient(135deg, #d8edff, #a9d7fa);
+    color: #123d60;
 }
 
 .book.green {
-    background: linear-gradient(
-        135deg,
-        #0c6843,
-        #139b65
-    );
-
-    color: #e1fff1;
+    background: linear-gradient(135deg, #d6f8eb, #a6edd4);
+    color: #075d47;
 }
 
 .book.red {
-    background: linear-gradient(
-        135deg,
-        #721a2a,
-        #bd293f
-    );
-
-    color: #ffe4e8;
+    background: linear-gradient(135deg, #ffe5eb, #ffc5d0);
+    color: #84243a;
 }
-
 
 /* =========================
    AI CARD
@@ -468,81 +378,57 @@ nav a:hover {
 
 .ai-card {
     position: absolute;
-
     right: 10px;
     bottom: 30px;
-
     width: 235px;
-
     padding: 22px;
-
-    background: rgba(17, 25, 35, 0.94);
-
+    background: rgba(255, 255, 255, 0.9);
     border: 1px solid var(--border);
-
     border-radius: 18px;
-
-    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45);
-
+    box-shadow: 0 20px 55px rgba(37, 93, 127, 0.15);
     backdrop-filter: blur(20px);
 }
 
 .ai-circle {
     width: 42px;
     height: 42px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     margin-bottom: 15px;
-
     border-radius: 50%;
-
     background: var(--green);
-
-    color: #06120c;
-
+    color: #ffffff;
     font-size: 13px;
     font-weight: 900;
 }
 
 .ai-card strong {
     display: block;
-
     color: var(--white);
-
     margin-bottom: 5px;
 }
 
 .ai-card span {
     color: var(--muted);
-
     font-size: 11px;
 }
 
 .progress {
     width: 100%;
     height: 6px;
-
     margin-top: 18px;
-
-    background: #1c2631;
-
+    background: #d4e7f4;
     border-radius: 20px;
-
     overflow: hidden;
 }
 
 .progress div {
     width: 72%;
     height: 100%;
-
     background: var(--green);
-
     border-radius: inherit;
 }
-
 
 /* =========================
    SECTIONS
@@ -554,34 +440,26 @@ section {
 
 .section-title {
     text-align: center;
-
     max-width: 650px;
-
     margin: 0 auto 55px;
 }
 
 .section-title > span {
-    color: var(--green);
-
+    color: var(--green-dark);
     font-size: 12px;
-
     font-weight: 800;
-
     letter-spacing: 2px;
 }
 
 .section-title h2 {
     color: var(--white);
-
     font-size: 38px;
-
     margin: 12px 0;
 }
 
 .section-title p {
     color: var(--muted);
 }
-
 
 /* =========================
    SUBJECTS
@@ -593,54 +471,38 @@ section {
 
 .subject-grid {
     display: grid;
-
     grid-template-columns: repeat(3, 1fr);
-
     gap: 20px;
 }
 
 .subject-card {
     padding: 32px;
-
     min-height: 280px;
-
-    background: var(--card);
-
+    background: rgba(255, 255, 255, 0.82);
     border: 1px solid var(--border);
-
     border-radius: 20px;
-
     transition: 0.3s;
-
     position: relative;
-
     overflow: hidden;
+    box-shadow: 0 12px 34px rgba(35, 91, 125, 0.05);
 }
 
 .subject-card:hover {
     transform: translateY(-7px);
-
-    background: var(--card-hover);
-
-    border-color: rgba(255, 255, 255, 0.15);
+    background: #ffffff;
+    border-color: rgba(12, 174, 131, 0.34);
 }
 
 .subject-card::after {
     content: "";
-
     position: absolute;
-
     width: 140px;
     height: 140px;
-
     border-radius: 50%;
-
     right: -60px;
     top: -60px;
-
     filter: blur(20px);
-
-    opacity: 0.15;
+    opacity: 0.1;
 }
 
 .blue-card::after {
@@ -658,43 +520,32 @@ section {
 .subject-icon {
     width: 55px;
     height: 55px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     margin-bottom: 25px;
-
     border-radius: 14px;
-
-    background: rgba(255, 255, 255, 0.05);
-
+    background: #e5f3fc;
+    border: 1px solid var(--border);
     font-size: 25px;
 }
 
 .subject-card h3 {
     color: var(--white);
-
     font-size: 23px;
-
     margin-bottom: 10px;
 }
 
 .subject-card p {
     color: var(--muted);
-
     font-size: 14px;
-
     margin-bottom: 25px;
 }
 
 .subject-card button {
     background: transparent;
-
     color: var(--white);
-
     font-weight: 700;
-
     font-size: 13px;
 }
 
@@ -703,13 +554,12 @@ section {
 }
 
 .green-card button {
-    color: var(--green);
+    color: var(--green-dark);
 }
 
 .red-card button {
-    color: var(--red);
+    color: var(--red-dark);
 }
-
 
 /* =========================
    HOW IT WORKS
@@ -717,44 +567,34 @@ section {
 
 .steps {
     display: grid;
-
     grid-template-columns: repeat(3, 1fr);
-
     gap: 20px;
 }
 
 .step {
     padding: 35px;
-
-    background: var(--card);
-
+    background: rgba(255, 255, 255, 0.82);
     border: 1px solid var(--border);
-
     border-radius: 20px;
+    box-shadow: 0 12px 34px rgba(35, 91, 125, 0.05);
 }
 
 .step-number {
-    color: var(--green);
-
+    color: var(--green-dark);
     font-size: 13px;
-
     font-weight: 900;
-
     margin-bottom: 20px;
 }
 
 .step h3 {
     color: var(--white);
-
     margin-bottom: 10px;
 }
 
 .step p {
     color: var(--muted);
-
     font-size: 14px;
 }
-
 
 /* =========================
    FOOTER
@@ -762,50 +602,39 @@ section {
 
 footer {
     padding: 40px 0;
-
     border-top: 1px solid var(--border);
-
-    background: #05080c;
+    background: #d8ecfa;
 }
 
 .footer-content {
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
-
     gap: 20px;
 }
 
 .footer-content p {
     color: var(--muted);
-
     margin-top: 10px;
-
     font-size: 13px;
 }
 
 .footer-content > div:last-child {
     color: var(--muted);
-
     font-size: 12px;
 }
-
 
 /* =========================
    RESPONSIVE
 ========================= */
 
 @media (max-width: 950px) {
-
     nav {
         display: none;
     }
 
     .hero-content {
         grid-template-columns: 1fr;
-
         text-align: center;
     }
 
@@ -832,16 +661,13 @@ footer {
     }
 }
 
-
 @media (max-width: 600px) {
-
     .nav-buttons .btn-login {
         display: none;
     }
 
     .nav-buttons .btn-primary {
         padding: 9px 12px;
-
         font-size: 12px;
     }
 
@@ -856,13 +682,11 @@ footer {
 
     .hero {
         min-height: auto;
-
         padding: 80px 0;
     }
 
     .hero h1 {
         font-size: 42px;
-
         letter-spacing: -1px;
     }
 
@@ -876,11 +700,8 @@ footer {
 
     .features {
         flex-direction: column;
-
         align-items: flex-start;
-
         width: max-content;
-
         margin: 0 auto;
     }
 
@@ -890,14 +711,12 @@ footer {
 
     .book {
         padding: 18px;
-
         font-size: 15px;
     }
 
     .ai-card {
         right: 0;
         bottom: 15px;
-
         width: 200px;
     }
 
@@ -911,28 +730,27 @@ footer {
 
     .footer-content {
         flex-direction: column;
-
         text-align: center;
     }
 }
+
+/* =========================
+   SUBJECT BUTTON
+========================= */
+
 .subject-button {
     display: inline-block;
     text-decoration: none;
     text-align: center;
-
-    background: #20e58b;
-    color: #06110d;
-
+    background: var(--green);
+    color: #ffffff;
     padding: 12px 24px;
     border-radius: 10px;
-
     font-weight: 700;
-
     transition: 0.2s;
 }
 
 .subject-button:hover {
-    background: #35f09b;
+    background: var(--green-dark);
     transform: translateY(-2px);
 }
-

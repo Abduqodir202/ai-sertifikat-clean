@@ -1,0 +1,204 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Matematika — AI Sertifikat{% endblock %}
+
+{% block content %}
+
+<style>
+    .coming-page {
+        min-height: 75vh;
+        padding: 60px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e5f2fa;
+        font-family: Arial, sans-serif;
+    }
+
+    .coming-card {
+        width: 100%;
+        max-width: 650px;
+        padding: 45px 30px;
+        text-align: center;
+        background: #fff;
+        border: 1px solid #d8e9f2;
+        border-radius: 24px;
+        box-shadow: 0 15px 45px rgba(41, 91, 125, 0.08);
+    }
+
+    .coming-icon {
+        width: 85px;
+        height: 85px;
+        margin: 0 auto 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 22px;
+        background: #fff0f2;
+        font-size: 42px;
+    }
+
+    .coming-badge {
+        display: inline-block;
+        margin-bottom: 18px;
+        padding: 9px 15px;
+        border-radius: 30px;
+        background: #fff0e8;
+        color: #c66a38;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .coming-card h1 {
+        margin: 0 0 16px;
+        color: #244b67;
+        font-size: 32px;
+        line-height: 1.3;
+    }
+
+    .coming-card h1 span {
+        color: #e05b70;
+    }
+
+    .coming-description {
+        max-width: 480px;
+        margin: 0 auto 25px;
+        color: #647e91;
+        font-size: 15px;
+        line-height: 1.8;
+    }
+
+    .coming-features {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 25px 0;
+        text-align: left;
+    }
+
+    .coming-feature {
+        padding: 15px;
+        border: 1px solid #e0edf3;
+        border-radius: 13px;
+        background: #f7fbfd;
+        color: #3c6179;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .coming-feature strong {
+        display: block;
+        margin-bottom: 4px;
+        color: #2d566e;
+        font-size: 14px;
+    }
+
+    .coming-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 8px;
+        padding: 14px 24px;
+        border-radius: 11px;
+        background: #0eaa80;
+        color: #fff !important;
+        text-decoration: none !important;
+        font-size: 14px;
+        font-weight: 700;
+        transition: background 0.2s, transform 0.2s;
+    }
+
+    .coming-button:hover {
+        background: #098c69;
+        transform: translateY(-2px);
+    }
+
+    .coming-note {
+        margin-top: 22px;
+        color: #8aa0af;
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    @media (max-width: 480px) {
+        .coming-page {
+            padding: 35px 14px;
+        }
+
+        .coming-card {
+            padding: 32px 18px;
+            border-radius: 18px;
+        }
+
+        .coming-card h1 {
+            font-size: 25px;
+        }
+
+        .coming-icon {
+            width: 70px;
+            height: 70px;
+            font-size: 35px;
+        }
+
+        .coming-features {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<section class="coming-page">
+    <div class="coming-card">
+
+        <div class="coming-icon">📕</div>
+
+        <div class="coming-badge">
+            ⚙️ SINOV REJIMIDA
+        </div>
+
+        <h1>
+            Matematika <span>AI yordamchi</span>
+        </h1>
+
+        <p class="coming-description">
+            Matematika fanidan testlar, masalalar va
+            bosqichma-bosqich yechimlarni taqdim etish
+            imkoniyatlarini tayyorlamoqdamiz.
+        </p>
+
+        <div class="coming-features">
+            <div class="coming-feature">
+                <strong>➗ Masalalar</strong>
+                Turli mavzulardagi matematik topshiriqlar.
+            </div>
+
+            <div class="coming-feature">
+                <strong>🧠 Yechimlar</strong>
+                Masalalarni bosqichma-bosqich tushuntirish.
+            </div>
+
+            <div class="coming-feature">
+                <strong>📊 Testlar</strong>
+                Bilimingizni sinab ko‘rish imkoniyati.
+            </div>
+
+            <div class="coming-feature">
+                <strong>💡 Tahlil</strong>
+                Xatolarni tushunish va ularni tuzatish.
+            </div>
+        </div>
+
+        <a href="/" class="coming-button">
+            ← Bosh sahifaga qaytish
+        </a>
+
+        <p class="coming-note">
+            Ushbu bo‘lim hozir tayyorlanmoqda.
+            Ishga tushganda imkoniyatlar shu sahifada paydo bo‘ladi.
+        </p>
+
+    </div>
+</section>
+
+{% endblock %}

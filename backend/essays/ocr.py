@@ -1,126 +1,88 @@
+
 import io
 
-import fitz  # PyMuPDF
 import pytesseract
-from PIL import Image, ImageOps, ImageFilter
+from PIL import Image, ImageOps, ImageEnhance, ImageFilter
 
 
-# Windows'dagi Tesseract manzili
 pytesseract.pytesseract.tesseract_cmd = (
     r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 )
 
 
-def preprocess_image(image):
-    """OCR uchun rasmni tayyorlash."""
-
-    if image.mode != "RGB":
-        image = image.convert("RGB")
-
-    # Kulrang
-    image = ImageOps.grayscale(image)
-
-    # Kontrastni yaxshilash
-    image = ImageOps.autocontrast(image)
-
-    # Aniqlikni biroz oshirish
-    image = image.filter(ImageFilter.SHARPEN)
-
-    return image
-
-
 def image_to_text(image_bytes):
-    """JPG/PNG/WEBP rasmdan matn olish."""
+    """Rasmdagi ruscha matnni satrma-satr OCR qilish."""
 
-    image = Image.open(io.BytesIO(image_bytes))
+    with Image.open(io.BytesIO(image_bytes)) as original:
+        image = ImageOps.exif_transpose(original).convert("RGB")
 
-    image = preprocess_image(image)
+    # Kulrang rasm va kontrastni yaxshilash
+    gray = ImageOps.grayscale(image)
+    gray = ImageOps.autocontrast(gray)
+    gray = ImageEnhance.Contrast(gray).enhance(1.4)
+    gray = gray.filter(ImageFilter.SHARPEN)
 
-    text = pytesseract.image_to_string(
-        image,
-        lang="rus+eng"
+    # Rasmni 2 baravar kattalashtirish
+    width, height = gray.size
+    gray = gray.resize(
+        (width * 2, height * 2),
+        Image.Resampling.LANCZOS,
     )
 
-    return text.strip()
-
-
-def pdf_to_text(pdf_bytes):
-    """
-    PDF'dan matn olish.
-
-    Oddiy PDF bo'lsa:
-        PDF → matn
-
-    Skan PDF bo'lsa:
-        PDF → rasm → OCR → matn
-    """
-
-    document = fitz.open(
-        stream=pdf_bytes,
-        filetype="pdf"
+    # Tesseract yordamida so'z va satrlar joylashuvini olish
+    data = pytesseract.image_to_data(
+        gray,
+        lang="rus",
+        config="--oem 3 --psm 11",
+        output_type=pytesseract.Output.DICT,
     )
 
-    all_text = []
+    lines = {}
 
-    for page in document:
+    for i, word in enumerate(data["text"]):
+        word = word.strip()
 
-        # 1. Avval PDF ichidagi tayyor matnni olamiz
-        text = page.get_text("text").strip()
-
-        if text:
-            all_text.append(text)
+        if not word:
             continue
 
-        # 2. Matn bo'lmasa, sahifani rasmga aylantiramiz
-        pix = page.get_pixmap(
-            matrix=fitz.Matrix(2, 2),
-            alpha=False
+        key = (
+            data["block_num"][i],
+            data["par_num"][i],
+            data["line_num"][i],
         )
 
-        image_bytes = pix.tobytes("png")
+        lines.setdefault(key, []).append(
+            (
+                data["left"][i],
+                word,
+            )
+        )
 
-        # 3. OCR
-        text = image_to_text(image_bytes)
+    result = []
 
-        if text:
-            all_text.append(text)
+    for words in lines.values():
+        words.sort(key=lambda item: item[0])
+        line = " ".join(word for _, word in words)
+        result.append(line)
 
-    document.close()
+    text = "\n".join(result).strip()
 
-    return "\n\n".join(all_text).strip()
+    print("SATRMA-SATR OCR NATIJASI:", flush=True)
+    print(text, flush=True)
 
-
+    return text
 def file_to_text(file):
-    """Rasm yoki PDF faylni matnga aylantirish."""
+    """Yuklangan rasm yoki PDF faylni matnga aylantiradi."""
 
     filename = file.name.lower()
-
     file_bytes = file.read()
 
-    # Rasm
-    if filename.endswith(
-        (".jpg", ".jpeg", ".png", ".webp")
-    ):
+    if filename.endswith((".jpg", ".jpeg", ".png", ".webp")):
         return image_to_text(file_bytes)
 
-    # PDF
     if filename.endswith(".pdf"):
         return pdf_to_text(file_bytes)
 
     raise ValueError(
-        "Faqat JPG, JPEG, PNG, WEBP yoki PDF "
-        "fayl yuborish mumkin."
+        "Faqat JPG, JPEG, PNG, WEBP yoki PDF fayl yuborish mumkin."
     )
-
-
-
-if __name__ == "__main__":
-    print("OCR ishlayapti!")
-
-    with open("backend/essays/test_esse.pdf", "rb") as file:
-        text = pdf_to_text(file.read())
-
-    print("\n--- PDF OCR NATIJA ---\n")
-    print(text)
-
-
