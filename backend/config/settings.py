@@ -1,15 +1,11 @@
-
 """
 Django settings for AI Sertifikat.
 
-Deployment:
-    Ubuntu VPS
-    Python virtual environment
-    Gunicorn
-    Nginx
-    systemd
-
-Secrets must be provided through environment variables or .env.
+Supports:
+- Local development
+- Ubuntu VPS
+- Gunicorn and Nginx
+- WhiteNoise static files
 """
 
 import os
@@ -36,8 +32,6 @@ env = environ.Env(
     DEBUG=(bool, False),
 )
 
-# Read .env from the Django project root.
-# Do not commit the actual .env file to GitHub.
 ENV_FILE = BASE_DIR / ".env"
 
 if ENV_FILE.is_file():
@@ -52,7 +46,8 @@ SECRET_KEY = env("SECRET_KEY", default="")
 
 if not SECRET_KEY:
     raise RuntimeError(
-        "SECRET_KEY is missing. Set it in the environment or .env file."
+        "SECRET_KEY is missing. Set it in the environment "
+        "or in the .env file."
     )
 
 DEBUG = env.bool("DEBUG", default=False)
@@ -75,8 +70,8 @@ CSRF_TRUSTED_ORIGINS = env.list(
     ],
 )
 
-# Use only when Nginx is the trusted HTTPS reverse proxy.
-# Nginx must set X-Forwarded-Proto correctly.
+# Use when Nginx is the trusted HTTPS reverse proxy.
+# Nginx must send: proxy_set_header X-Forwarded-Proto $scheme;
 SECURE_PROXY_SSL_HEADER = (
     "HTTP_X_FORWARDED_PROTO",
     "https",
@@ -88,11 +83,11 @@ CSRF_COOKIE_SECURE = not DEBUG
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
-# Enable HSTS only after HTTPS has been verified on the domain.
 SECURE_HSTS_SECONDS = env.int(
     "SECURE_HSTS_SECONDS",
     default=0,
 )
+
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
 
@@ -143,6 +138,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -232,12 +228,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": (
             "django.contrib.auth.password_validation."
-            "CommonPasswordValidator"
-        ),
-    },
-    {
-        "NAME": (
-            "django.contrib.auth.password_validation."
             "NumericPasswordValidator"
         ),
     },
@@ -261,6 +251,7 @@ USE_TZ = True
 # =========================================================
 
 STATIC_URL = "/static/"
+
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_DIRS = (
@@ -269,8 +260,6 @@ STATICFILES_DIRS = (
     else []
 )
 
-# Django 4.2+ storage configuration.
-# Run python manage.py collectstatic during deployment.
 STORAGES = {
     "default": {
         "BACKEND": (
@@ -279,7 +268,9 @@ STORAGES = {
     },
     "staticfiles": {
         "BACKEND": (
-            "whitenoise.storage.CompressedManifestStaticFilesStorage"
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if DEBUG
+            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
         ),
     },
 }
@@ -290,6 +281,7 @@ STORAGES = {
 # =========================================================
 
 MEDIA_URL = "/media/"
+
 MEDIA_ROOT = BASE_DIR / "media"
 
 
@@ -344,6 +336,8 @@ DEFAULT_FROM_EMAIL = env(
     ),
 )
 
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
 EMAIL_TIMEOUT = 20
 
 
@@ -358,8 +352,6 @@ CORS_ALLOWED_ORIGINS = env.list(
         "https://www.aisertifikat.uz",
     ],
 )
-
-# Do not enable CORS_ALLOW_ALL_ORIGINS in production.
 
 
 # =========================================================
@@ -379,12 +371,65 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 LOGIN_URL = "/accounts/login/"
+
 LOGIN_REDIRECT_URL = "/"
 
 LOGOUT_REDIRECT_URL = "/"
 
+
+# =========================================================
+# ALLAUTH: ACCOUNT (django-allauth 65.x)
+# =========================================================
+
+# Login with username OR email
+ACCOUNT_LOGIN_METHODS = {"username", "email"}
+
+# Fields on the signup form (* = required)
+ACCOUNT_SIGNUP_FIELDS = [
+    "email*",
+    "username*",
+    "password1*",
+    "password2*",
+]
+
+# Email must be verified before the user can log in
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+
+# Send a confirmation CODE instead of a link
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+
+# Links in emails and OAuth redirect URIs must use https
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+
+
+# =========================================================
+# ALLAUTH: SOCIAL ACCOUNT (Google)
+# =========================================================
+
 SOCIALACCOUNT_LOGIN_ON_GET = True
+
 SOCIALACCOUNT_AUTO_SIGNUP = True
+
+# Google verifies the email, so link to an existing account
+# with the same email instead of showing an error.
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+# NOTE: client_id and secret are stored in the database
+# (admin panel -> Social applications -> Google).
+# If the server file has a different SOCIALACCOUNT_PROVIDERS
+# block, use that one instead of this default.
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online"},
+    },
+}
+
+# Enable only if config/social_adapter.py exists in the repository:
+# SOCIALACCOUNT_ADAPTER = (
+#     "config.social_adapter.DiagnosticSocialAccountAdapter"
+# )
 
 
 # =========================================================
@@ -396,11 +441,6 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.AllowAny",
     ],
 }
-
-# Important:
-# Change AllowAny to IsAuthenticated for protected APIs,
-# or configure permissions individually in your API views.
-# Do not assume all endpoints are protected by this setting.
 
 
 # =========================================================
