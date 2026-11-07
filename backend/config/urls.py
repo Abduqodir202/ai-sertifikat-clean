@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from django.shortcuts import render
+from django.urls import path, include
 
 from userprofile.views import (
     profile_page,
@@ -76,4 +76,5 @@ urlpatterns = [
     path("matematika/", matematika_page, name="matematika"),
     path("narxlar/", narxlar_page, name="narxlar"),
     path("aloqa/", aloqa_page, name="aloqa"),
+    path("matematika/", include("mathprep.urls")),
 ]

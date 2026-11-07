@@ -13,7 +13,6 @@ from pathlib import Path
 
 import environ
 
-
 # =========================================================
 # PATHS
 # =========================================================
@@ -22,7 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 PROJECT_ROOT = BASE_DIR.parent
 
 FRONTEND_DIR = PROJECT_ROOT / "frontend"
-
 
 # =========================================================
 # ENVIRONMENT
@@ -36,7 +34,6 @@ ENV_FILE = BASE_DIR / ".env"
 
 if ENV_FILE.is_file():
     environ.Env.read_env(str(ENV_FILE))
-
 
 # =========================================================
 # SECURITY
@@ -91,7 +88,6 @@ SECURE_HSTS_SECONDS = env.int(
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
 
-
 # =========================================================
 # OPENAI
 # =========================================================
@@ -100,7 +96,6 @@ OPENAI_API_KEY = env(
     "OPENAI_API_KEY",
     default="",
 )
-
 
 # =========================================================
 # APPLICATIONS
@@ -126,8 +121,8 @@ INSTALLED_APPS = [
     # Local applications
     "essays",
     "userprofile",
+    "mathprep",
 ]
-
 
 # =========================================================
 # MIDDLEWARE
@@ -147,7 +142,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-
 # =========================================================
 # URL CONFIGURATION
 # =========================================================
@@ -155,7 +149,6 @@ MIDDLEWARE = [
 ROOT_URLCONF = "config.urls"
 
 WSGI_APPLICATION = "config.wsgi.application"
-
 
 # =========================================================
 # TEMPLATES
@@ -181,7 +174,6 @@ TEMPLATES = [
     },
 ]
 
-
 # =========================================================
 # DATABASE
 # =========================================================
@@ -200,7 +192,6 @@ DATABASES = {
         },
     },
 }
-
 
 # =========================================================
 # PASSWORD VALIDATION
@@ -233,7 +224,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # =========================================================
 # LANGUAGE AND TIME
 # =========================================================
@@ -244,7 +234,6 @@ TIME_ZONE = "Asia/Tashkent"
 
 USE_I18N = True
 USE_TZ = True
-
 
 # =========================================================
 # STATIC FILES
@@ -275,7 +264,6 @@ STORAGES = {
     },
 }
 
-
 # =========================================================
 # MEDIA FILES
 # =========================================================
@@ -283,7 +271,6 @@ STORAGES = {
 MEDIA_URL = "/media/"
 
 MEDIA_ROOT = BASE_DIR / "media"
-
 
 # =========================================================
 # EMAIL
@@ -331,15 +318,14 @@ EMAIL_HOST_PASSWORD = env(
 DEFAULT_FROM_EMAIL = env(
     "DEFAULT_FROM_EMAIL",
     default=(
-        EMAIL_HOST_USER
-        or "noreply@aisertifikat.uz"
+            EMAIL_HOST_USER
+            or "noreply@aisertifikat.uz"
     ),
 )
 
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 EMAIL_TIMEOUT = 20
-
 
 # =========================================================
 # CORS
@@ -353,13 +339,11 @@ CORS_ALLOWED_ORIGINS = env.list(
     ],
 )
 
-
 # =========================================================
 # DJANGO SITES
 # =========================================================
 
 SITE_ID = 1
-
 
 # =========================================================
 # AUTHENTICATION
@@ -375,7 +359,6 @@ LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 
 LOGOUT_REDIRECT_URL = "/"
-
 
 # =========================================================
 # ALLAUTH: ACCOUNT (django-allauth 65.x)
@@ -400,7 +383,6 @@ ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
 
 # Links in emails and OAuth redirect URIs must use https
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
-
 
 # =========================================================
 # ALLAUTH: SOCIAL ACCOUNT (Google)
@@ -442,13 +424,11 @@ REST_FRAMEWORK = {
     ],
 }
 
-
 # =========================================================
 # DEFAULT PRIMARY KEY
 # =========================================================
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
 
 # =========================================================
 # LOGGING

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Matematika — AI Sertifikat{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'mathprep/css/math.css' %}">
+<section class="mp-page">
+  <div class="mp-wrap">
+    <header class="mp-head">
+      <span class="mp-kicker">AI SERTIFIKAT · MATEMATIKA</span>
+      <h1>Milliy sertifikatga tayyorgarlik</h1>
+      <p>Mavzularni mashq qiling yoki imtihon sharoitida o‘zingizni sinab ko‘ring.</p>
+    </header>
+
+    <div class="mp-mode-grid">
+      <button class="mp-mode active" data-mode="practice" type="button">
+        <span class="mp-mode-icon">📚</span><b>Mavzuli mashqlar</b>
+        <small>Mavzu va qiyinlik darajasini tanlang</small>
+      </button>
+      <button class="mp-mode" data-mode="exam" type="button">
+        <span class="mp-mode-icon">📝</span><b>To‘liq imtihon</b>
+        <small>{{ exam_count }} ta topshiriq · {{ exam_minutes }} daqiqa</small>
+      </button>
+    </div>
+
+    <section id="practiceSettings" class="mp-panel">
+      <div class="mp-field">
+        <label for="topicSelect">Mavzu</label>
+        <select id="topicSelect">
+          <option value="all">Barcha mavzular</option>
+          <option value="numbers">Sonlar va amallar</option>
+          <option value="algebra">Algebra</option>
+          <option value="equations">Tenglama va tengsizliklar</option>
+          <option value="functions">Funksiyalar</option>
+          <option value="analysis">Hosila va integral</option>
+          <option value="probability">Ehtimollar va statistika</option>
+          <option value="geometry">Geometriya</option>
+        </select>
+      </div>
+      <div class="mp-field">
+        <label for="levelSelect">Qiyinlik darajasi</label>
+        <select id="levelSelect">
+          <option value="all">Barcha darajalar</option>
+          <option value="easy">Oson</option>
+          <option value="medium">O‘rta</option>
+          <option value="hard">Murakkab</option>
+        </select>
+      </div>
+      <button id="startPractice" class="mp-primary" type="button">Mashqni boshlash</button>
+      <button id="generateAI" class="mp-secondary" type="button">✨ AI orqali 5 ta yangi savol yaratish</button>
+      <p class="mp-hint">AI yaratgan savollar alohida belgilanadi va rasmiy imtihon savoli hisoblanmaydi.</p>
+    </section>
+
+    <section id="examIntro" class="mp-panel" hidden>
+      <h2>Imtihon rejimi</h2>
+      <div class="mp-facts"><span>45 ta topshiriq</span><span>150 daqiqa</span><span>Aralash daraja</span></div>
+      <p class="mp-hint">Imtihon davomida javoblar darhol ko‘rsatilmaydi. Yakunda natija va yechimlar ochiladi.</p>
+      <button id="startExam" class="mp-primary" type="button">Imtihonni boshlash</button>
+    </section>
+
+    <section id="quiz" hidden>
+      <div class="mp-quizbar">
+        <div><b id="progressText">0 / 0</b><div class="mp-progress"><span id="progressBar"></span></div></div>
+        <div id="timer" class="mp-timer" hidden>150:00</div>
+      </div>
+      <div id="questionList"></div>
+      <div class="mp-actions">
+        <button id="submitQuiz" class="mp-primary" type="button">Javoblarni tekshirish</button>
+        <button id="cancelQuiz" class="mp-secondary" type="button">Chiqish</button>
+      </div>
+    </section>
+
+    <section id="result" class="mp-result" hidden>
+      <span class="mp-kicker">NATIJANGIZ</span>
+      <div id="score" class="mp-score"></div>
+      <p id="resultMessage"></p>
+      <div id="resultMeta" class="mp-hint"></div>
+      <button id="again" class="mp-primary" type="button">Yana mashq qilish</button>
+    </section>
+
+    <section id="history" class="mp-panel" hidden>
+      <h2>Oxirgi natijalar</h2>
+      <div id="historyList"></div>
+    </section>
+    <p class="mp-disclaimer">Bu platformadagi mashqlar tayyorgarlik uchun mo‘ljallangan. Ko‘rsatilgan foiz rasmiy Milliy sertifikat bali emas. Rasmiy baholash va Rasch modeli natijasi deb talqin qilinmaydi.</p>
+  </div>
+</section>
+<script src="{% static 'mathprep/js/math.js' %}" defer></script>
+{% endblock %}
