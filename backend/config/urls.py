@@ -1,4 +1,3 @@
-
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import render
@@ -63,4 +62,5 @@ urlpatterns = [
 
     path("narxlar/", narxlar_page, name="narxlar"),
     path("aloqa/", aloqa_page, name="aloqa"),
+    path("matematika-imtihon/", include("mathexam.urls")),
 ]

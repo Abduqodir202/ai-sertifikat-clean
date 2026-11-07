@@ -122,6 +122,7 @@ INSTALLED_APPS = [
     "essays",
     "userprofile",
     "mathprep",
+    "mathexam",
 ]
 
 # =========================================================
